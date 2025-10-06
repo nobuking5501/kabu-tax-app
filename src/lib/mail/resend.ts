@@ -1,7 +1,5 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export interface SendMailOptions {
   to: string;
   subject: string;
@@ -12,6 +10,8 @@ export interface SendMailOptions {
 
 export async function sendMailWithAttachment(options: SendMailOptions) {
   const { to, subject, text, filename, bytes } = options;
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
   await resend.emails.send({
     from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
