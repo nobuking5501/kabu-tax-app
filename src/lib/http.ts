@@ -9,7 +9,7 @@ export function errorResponse(message: string, status = 500) {
 }
 
 export function pdfResponse(pdfBytes: Buffer, filename: string) {
-  return new NextResponse(pdfBytes, {
+  return new NextResponse(new Uint8Array(pdfBytes), {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
