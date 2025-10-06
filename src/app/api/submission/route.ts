@@ -116,7 +116,7 @@ ${body.email} 様
     }
 
     // PDFダウンロードモード
-    return new NextResponse(pdfBytes, {
+    return new NextResponse(new Uint8Array(pdfBytes), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
