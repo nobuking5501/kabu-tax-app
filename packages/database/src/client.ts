@@ -1,69 +1,32 @@
-import { Pool, QueryResult, QueryResultRow } from "pg";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 
-// グローバルなプールインスタンス
-let pool: Pool | null = null;
+// グローバルなSupabaseクライアントインスタンス
+let supabase: SupabaseClient | null = null;
 
-function getPool(): Pool {
-  if (!pool) {
-    const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+export function getSupabaseClient(): SupabaseClient {
+  if (!supabase) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!connectionString) {
-      throw new Error("DATABASE_URL or POSTGRES_URL environment variable is not set");
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error(
+        "NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variable is not set"
+      );
     }
 
-    pool = new Pool({
-      connectionString,
-      ssl: {
-        rejectUnauthorized: false, // Supabase用
+    supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
       },
     });
   }
-  return pool;
+  return supabase;
 }
 
-// @vercel/postgresのsql互換インターフェース
+// 後方互換性のため
 export const sql = {
-  async query<T extends QueryResultRow = any>(
-    text: string,
-    params?: any[]
-  ): Promise<QueryResult<T>> {
-    const pool = getPool();
-    return await pool.query<T>(text, params);
+  query: async () => {
+    throw new Error("Use Supabase client directly via getSupabaseClient()");
   },
 };
-
-// テンプレートリテラル用のsql関数
-export async function sqlTemplate<T extends QueryResultRow = any>(
-  strings: TemplateStringsArray,
-  ...values: any[]
-): Promise<QueryResult<T>> {
-  const pool = getPool();
-
-  // テンプレートリテラルをパラメータ化クエリに変換
-  let text = "";
-  const params: any[] = [];
-
-  for (let i = 0; i < strings.length; i++) {
-    text += strings[i];
-    if (i < values.length) {
-      params.push(values[i]);
-      text += `$${params.length}`;
-    }
-  }
-
-  return await pool.query<T>(text, params);
-}
-
-// デフォルトのquery関数
-export async function query<T = any>(text: string, params?: any[]): Promise<T[]> {
-  const result = await sql.query(text, params);
-  return result.rows as T[];
-}
-
-// プール接続を閉じる（テスト用）
-export async function closePool(): Promise<void> {
-  if (pool) {
-    await pool.end();
-    pool = null;
-  }
-}

@@ -1,4 +1,4 @@
-import { sql } from "./client";
+import { getSupabaseClient } from "./client";
 import type { Submission, Transaction, Customer } from "./types";
 
 // Submission関連
@@ -9,28 +9,48 @@ export async function createSubmission(data: {
   years: number[];
   transaction_count: number;
 }): Promise<number> {
-  const result = await sql.query(
-    `INSERT INTO submissions (email, symbol, currency, years, transaction_count, pdf_generated)
-     VALUES ($1, $2, $3, $4, $5, $6)
-     RETURNING id`,
-    [data.email, data.symbol, data.currency, data.years, data.transaction_count, true]
-  );
-  return result.rows[0].id;
+  const supabase = getSupabaseClient();
+
+  const { data: result, error } = await supabase
+    .from("submissions")
+    .insert({
+      email: data.email,
+      symbol: data.symbol,
+      currency: data.currency,
+      years: data.years,
+      transaction_count: data.transaction_count,
+      pdf_generated: true,
+    })
+    .select("id")
+    .single();
+
+  if (error) throw error;
+  return result.id;
 }
 
 export async function getAllSubmissions(): Promise<Submission[]> {
-  const result = await sql.query(
-    `SELECT * FROM submissions ORDER BY created_at DESC`
-  );
-  return result.rows as Submission[];
+  const supabase = getSupabaseClient();
+
+  const { data, error } = await supabase
+    .from("submissions")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data as Submission[]) || [];
 }
 
 export async function getSubmissionsByEmail(email: string): Promise<Submission[]> {
-  const result = await sql.query(
-    `SELECT * FROM submissions WHERE email = $1 ORDER BY created_at DESC`,
-    [email]
-  );
-  return result.rows as Submission[];
+  const supabase = getSupabaseClient();
+
+  const { data, error } = await supabase
+    .from("submissions")
+    .select("*")
+    .eq("email", email)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data as Submission[]) || [];
 }
 
 // Transaction関連
@@ -42,63 +62,117 @@ export async function createTransaction(data: {
   price: number;
   commission?: number;
 }): Promise<void> {
-  await sql.query(
-    `INSERT INTO transactions (submission_id, date, activity, quantity, price, commission)
-     VALUES ($1, $2, $3, $4, $5, $6)`,
-    [data.submission_id, data.date, data.activity, data.quantity, data.price, data.commission || null]
-  );
+  const supabase = getSupabaseClient();
+
+  const { error } = await supabase.from("transactions").insert({
+    submission_id: data.submission_id,
+    date: data.date,
+    activity: data.activity,
+    quantity: data.quantity,
+    price: data.price,
+    commission: data.commission || null,
+  });
+
+  if (error) throw error;
 }
 
 export async function getTransactionsBySubmission(submissionId: number): Promise<Transaction[]> {
-  const result = await sql.query(
-    `SELECT * FROM transactions WHERE submission_id = $1 ORDER BY date ASC`,
-    [submissionId]
-  );
-  return result.rows as Transaction[];
+  const supabase = getSupabaseClient();
+
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("*")
+    .eq("submission_id", submissionId)
+    .order("date", { ascending: true });
+
+  if (error) throw error;
+  return (data as Transaction[]) || [];
 }
 
 // Customer関連
 export async function getAllCustomers(): Promise<Customer[]> {
-  const result = await sql.query(
-    `SELECT
-      email,
-      MIN(created_at) as first_submission,
-      MAX(created_at) as last_submission,
-      COUNT(*) as total_submissions,
-      SUM(CASE WHEN pdf_generated THEN 1 ELSE 0 END) as total_pdfs
-    FROM submissions
-    GROUP BY email
-    ORDER BY last_submission DESC`
+  const supabase = getSupabaseClient();
+
+  // Supabaseでは複雑な集計クエリはRPCを使う必要があります
+  // ここでは全データを取得して、JavaScriptで集計します
+  const { data: submissions, error } = await supabase
+    .from("submissions")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  if (!submissions) return [];
+
+  // JavaScriptで集計
+  const customerMap = new Map<string, Customer>();
+
+  submissions.forEach((sub: any) => {
+    const existing = customerMap.get(sub.email);
+
+    if (!existing) {
+      customerMap.set(sub.email, {
+        email: sub.email,
+        first_submission: sub.created_at,
+        last_submission: sub.created_at,
+        total_submissions: 1,
+        total_pdfs: sub.pdf_generated ? 1 : 0,
+      });
+    } else {
+      existing.total_submissions++;
+      if (sub.pdf_generated) existing.total_pdfs++;
+      if (new Date(sub.created_at) < new Date(existing.first_submission)) {
+        existing.first_submission = sub.created_at;
+      }
+      if (new Date(sub.created_at) > new Date(existing.last_submission)) {
+        existing.last_submission = sub.created_at;
+      }
+    }
+  });
+
+  return Array.from(customerMap.values()).sort(
+    (a, b) =>
+      new Date(b.last_submission).getTime() -
+      new Date(a.last_submission).getTime()
   );
-  return result.rows as Customer[];
 }
 
 // 統計
 export async function getStats() {
-  const totalCustomers = await sql.query(
-    `SELECT COUNT(DISTINCT email) as count FROM submissions`
-  );
+  const supabase = getSupabaseClient();
 
-  const totalSubmissions = await sql.query(
-    `SELECT COUNT(*) as count FROM submissions`
-  );
+  const { data: submissions, error } = await supabase
+    .from("submissions")
+    .select("*");
 
-  const totalPDFs = await sql.query(
-    `SELECT COUNT(*) as count FROM submissions WHERE pdf_generated = true`
-  );
+  if (error) throw error;
+  if (!submissions) {
+    return {
+      totalCustomers: 0,
+      totalSubmissions: 0,
+      totalPDFs: 0,
+      popularSymbols: [],
+    };
+  }
 
-  const popularSymbols = await sql.query(
-    `SELECT symbol, COUNT(*) as count
-     FROM submissions
-     GROUP BY symbol
-     ORDER BY count DESC
-     LIMIT 5`
-  );
+  // JavaScriptで集計
+  const uniqueEmails = new Set(submissions.map((s: any) => s.email));
+  const totalPDFs = submissions.filter((s: any) => s.pdf_generated).length;
+
+  // シンボル集計
+  const symbolCounts = new Map<string, number>();
+  submissions.forEach((s: any) => {
+    symbolCounts.set(s.symbol, (symbolCounts.get(s.symbol) || 0) + 1);
+  });
+
+  const popularSymbols = Array.from(symbolCounts.entries())
+    .map(([symbol, count]) => ({ symbol, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
 
   return {
-    totalCustomers: parseInt(totalCustomers.rows[0].count),
-    totalSubmissions: parseInt(totalSubmissions.rows[0].count),
-    totalPDFs: parseInt(totalPDFs.rows[0].count),
-    popularSymbols: popularSymbols.rows,
+    totalCustomers: uniqueEmails.size,
+    totalSubmissions: submissions.length,
+    totalPDFs,
+    popularSymbols,
   };
 }
