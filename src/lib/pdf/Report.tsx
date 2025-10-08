@@ -1,12 +1,33 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/renderer";
 import type { CalcResult } from "../engine/types";
+import fs from "fs";
+import path from "path";
+
+// 日本語フォントの登録（サーバーサイド用にBufferとして読み込み）
+if (typeof window === 'undefined') {
+  // サーバーサイド: ファイルをBase64に変換して登録
+  const fontPath = path.join(process.cwd(), 'public', 'fonts', 'NotoSansJP-Regular.ttf');
+  const fontBuffer = fs.readFileSync(fontPath);
+  const fontBase64 = fontBuffer.toString('base64');
+
+  Font.register({
+    family: "NotoSansJP",
+    src: `data:font/ttf;base64,${fontBase64}`,
+  });
+} else {
+  // クライアントサイド（ブラウザ）: URLで指定
+  Font.register({
+    family: "NotoSansJP",
+    src: '/fonts/NotoSansJP-Regular.ttf',
+  });
+}
 
 const styles = StyleSheet.create({
   page: {
     padding: 40,
     fontSize: 10,
-    fontFamily: "Helvetica",
+    fontFamily: "NotoSansJP",
   },
   header: {
     marginBottom: 20,

@@ -1,5 +1,6 @@
 # dependencies
 /node_modules
+**/node_modules
 /.pnp
 .pnp.js
 
@@ -8,10 +9,14 @@
 
 # next.js
 /.next/
+**/.next/
 /out/
+**/out/
 
 # production
 /build
+**/build
+**/dist
 
 # misc
 .DS_Store
@@ -21,13 +26,27 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
 # local env files
 .env*.local
+**/.env*.local
 
 # vercel
 .vercel
+**/.vercel
 
 # typescript
 *.tsbuildinfo
+**/tsconfig.tsbuildinfo
 next-env.d.ts
+
+# turbo
+.turbo
+
+# development files
+analyze_*.js
+analyze_*.py
+extract_*.js
+*.xlsx
+*.xls

@@ -93,7 +93,7 @@ export default function LoginPage() {
 
         {/* フッター */}
         <div className="mt-8 text-center text-sm text-gray-600">
-          © 2025 榧野国際税務会計事務所
+          © 2025 〇〇国際税務会計事務所
         </div>
       </div>
     </div>

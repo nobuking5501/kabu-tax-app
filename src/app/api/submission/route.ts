@@ -106,7 +106,7 @@ ${body.email} 様
 ご確認のほどよろしくお願いいたします。
 
 ---
-榧野国際税務会計事務所
+〇〇国際税務会計事務所
         `.trim(),
         filename,
         bytes: pdfBytes,
