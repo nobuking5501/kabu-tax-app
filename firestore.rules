@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // submissionsコレクションへのアクセス制御
+    match /submissions/{submissionId} {
+      // 認証されたユーザーのみ読み取り可能（将来Firebase Auth導入後）
+      allow read: if request.auth != null;
+
+      // サーバー側（Admin SDK）からの書き込みのみ許可
+      // クライアント側からの直接書き込みは禁止
+      allow write: if false;
+
+      // transactionsサブコレクション
+      match /transactions/{transactionId} {
+        allow read: if request.auth != null;
+        allow write: if false;
+      }
+    }
+
+    // 開発環境用（必要に応じて有効化）
+    // match /{document=**} {
+    //   allow read, write: if true;
+    // }
+  }
+}

@@ -4,8 +4,11 @@
   "private": true,
   "main": "./src/index.ts",
   "types": "./src/index.ts",
+  "scripts": {
+    "build": "echo 'No build required for TypeScript source package'"
+  },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.0"
+    "firebase-admin": "^12.0.0"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

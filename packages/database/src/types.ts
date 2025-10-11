@@ -1,5 +1,5 @@
 export interface Submission {
-  id: number;
+  id: string; // FirestoreのドキュメントIDは文字列
   email: string;
   symbol: string;
   currency: string;
@@ -11,8 +11,8 @@ export interface Submission {
 }
 
 export interface Transaction {
-  id: number;
-  submission_id: number;
+  id: string; // FirestoreのドキュメントIDは文字列
+  submission_id: string; // 親ドキュメントIDも文字列
   date: string;
   activity: "Purchased" | "Sold";
   quantity: number;

@@ -1,5 +1,6 @@
-import { getSupabaseClient } from "./client";
+import { getFirestoreClient } from "./client";
 import type { Submission, Transaction, Customer } from "./types";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
 
 // Submission関連
 export async function createSubmission(data: {
@@ -8,144 +9,176 @@ export async function createSubmission(data: {
   currency: string;
   years: number[];
   transaction_count: number;
-}): Promise<number> {
-  const supabase = getSupabaseClient();
+}): Promise<string> {
+  const db = getFirestoreClient();
 
-  const { data: result, error } = await supabase
-    .from("submissions")
-    .insert({
+  const docRef = await db.collection("submissions").add({
+    email: data.email,
+    symbol: data.symbol,
+    currency: data.currency,
+    years: data.years,
+    transaction_count: data.transaction_count,
+    pdf_generated: true,
+    created_at: FieldValue.serverTimestamp(),
+    updated_at: FieldValue.serverTimestamp(),
+  });
+
+  return docRef.id;
+}
+
+export async function getAllSubmissions(): Promise<Submission[]> {
+  const db = getFirestoreClient();
+
+  const snapshot = await db
+    .collection("submissions")
+    .orderBy("created_at", "desc")
+    .get();
+
+  return snapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
       email: data.email,
       symbol: data.symbol,
       currency: data.currency,
       years: data.years,
       transaction_count: data.transaction_count,
-      pdf_generated: true,
-    })
-    .select("id")
-    .single();
-
-  if (error) throw error;
-  return result.id;
+      pdf_generated: data.pdf_generated,
+      created_at: data.created_at?.toDate() || new Date(),
+      updated_at: data.updated_at?.toDate() || new Date(),
+    } as Submission;
+  });
 }
 
-export async function getAllSubmissions(): Promise<Submission[]> {
-  const supabase = getSupabaseClient();
+export async function getSubmissionsByEmail(
+  email: string
+): Promise<Submission[]> {
+  const db = getFirestoreClient();
 
-  const { data, error } = await supabase
-    .from("submissions")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const snapshot = await db
+    .collection("submissions")
+    .where("email", "==", email)
+    .orderBy("created_at", "desc")
+    .get();
 
-  if (error) throw error;
-  return (data as Submission[]) || [];
-}
-
-export async function getSubmissionsByEmail(email: string): Promise<Submission[]> {
-  const supabase = getSupabaseClient();
-
-  const { data, error } = await supabase
-    .from("submissions")
-    .select("*")
-    .eq("email", email)
-    .order("created_at", { ascending: false });
-
-  if (error) throw error;
-  return (data as Submission[]) || [];
+  return snapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      email: data.email,
+      symbol: data.symbol,
+      currency: data.currency,
+      years: data.years,
+      transaction_count: data.transaction_count,
+      pdf_generated: data.pdf_generated,
+      created_at: data.created_at?.toDate() || new Date(),
+      updated_at: data.updated_at?.toDate() || new Date(),
+    } as Submission;
+  });
 }
 
 // Transaction関連
 export async function createTransaction(data: {
-  submission_id: number;
+  submission_id: string;
   date: string;
   activity: "Purchased" | "Sold";
   quantity: number;
   price: number;
   commission?: number;
 }): Promise<void> {
-  const supabase = getSupabaseClient();
+  const db = getFirestoreClient();
 
-  const { error } = await supabase.from("transactions").insert({
-    submission_id: data.submission_id,
-    date: data.date,
-    activity: data.activity,
-    quantity: data.quantity,
-    price: data.price,
-    commission: data.commission || null,
-  });
-
-  if (error) throw error;
+  await db
+    .collection("submissions")
+    .doc(data.submission_id)
+    .collection("transactions")
+    .add({
+      date: data.date,
+      activity: data.activity,
+      quantity: data.quantity,
+      price: data.price,
+      commission: data.commission || null,
+      created_at: FieldValue.serverTimestamp(),
+    });
 }
 
-export async function getTransactionsBySubmission(submissionId: number): Promise<Transaction[]> {
-  const supabase = getSupabaseClient();
+export async function getTransactionsBySubmission(
+  submissionId: string
+): Promise<Transaction[]> {
+  const db = getFirestoreClient();
 
-  const { data, error } = await supabase
-    .from("transactions")
-    .select("*")
-    .eq("submission_id", submissionId)
-    .order("date", { ascending: true });
+  const snapshot = await db
+    .collection("submissions")
+    .doc(submissionId)
+    .collection("transactions")
+    .orderBy("date", "asc")
+    .get();
 
-  if (error) throw error;
-  return (data as Transaction[]) || [];
+  return snapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      submission_id: submissionId,
+      date: data.date,
+      activity: data.activity,
+      quantity: data.quantity,
+      price: data.price,
+      commission: data.commission,
+      created_at: data.created_at?.toDate() || new Date(),
+    } as Transaction;
+  });
 }
 
 // Customer関連
 export async function getAllCustomers(): Promise<Customer[]> {
-  const supabase = getSupabaseClient();
+  const db = getFirestoreClient();
 
-  // Supabaseでは複雑な集計クエリはRPCを使う必要があります
-  // ここでは全データを取得して、JavaScriptで集計します
-  const { data: submissions, error } = await supabase
-    .from("submissions")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) throw error;
-  if (!submissions) return [];
+  const snapshot = await db
+    .collection("submissions")
+    .orderBy("created_at", "desc")
+    .get();
 
   // JavaScriptで集計
   const customerMap = new Map<string, Customer>();
 
-  submissions.forEach((sub: any) => {
-    const existing = customerMap.get(sub.email);
+  snapshot.docs.forEach((doc) => {
+    const data = doc.data();
+    const email = data.email;
+    const createdAt = data.created_at?.toDate() || new Date();
+    const existing = customerMap.get(email);
 
     if (!existing) {
-      customerMap.set(sub.email, {
-        email: sub.email,
-        first_submission: sub.created_at,
-        last_submission: sub.created_at,
+      customerMap.set(email, {
+        email: email,
+        first_submission: createdAt,
+        last_submission: createdAt,
         total_submissions: 1,
-        total_pdfs: sub.pdf_generated ? 1 : 0,
+        total_pdfs: data.pdf_generated ? 1 : 0,
       });
     } else {
       existing.total_submissions++;
-      if (sub.pdf_generated) existing.total_pdfs++;
-      if (new Date(sub.created_at) < new Date(existing.first_submission)) {
-        existing.first_submission = sub.created_at;
+      if (data.pdf_generated) existing.total_pdfs++;
+      if (createdAt < existing.first_submission) {
+        existing.first_submission = createdAt;
       }
-      if (new Date(sub.created_at) > new Date(existing.last_submission)) {
-        existing.last_submission = sub.created_at;
+      if (createdAt > existing.last_submission) {
+        existing.last_submission = createdAt;
       }
     }
   });
 
   return Array.from(customerMap.values()).sort(
-    (a, b) =>
-      new Date(b.last_submission).getTime() -
-      new Date(a.last_submission).getTime()
+    (a, b) => b.last_submission.getTime() - a.last_submission.getTime()
   );
 }
 
 // 統計
 export async function getStats() {
-  const supabase = getSupabaseClient();
+  const db = getFirestoreClient();
 
-  const { data: submissions, error } = await supabase
-    .from("submissions")
-    .select("*");
+  const snapshot = await db.collection("submissions").get();
 
-  if (error) throw error;
-  if (!submissions) {
+  if (snapshot.empty) {
     return {
       totalCustomers: 0,
       totalSubmissions: 0,
@@ -155,13 +188,15 @@ export async function getStats() {
   }
 
   // JavaScriptで集計
-  const uniqueEmails = new Set(submissions.map((s: any) => s.email));
-  const totalPDFs = submissions.filter((s: any) => s.pdf_generated).length;
-
-  // シンボル集計
+  const uniqueEmails = new Set<string>();
+  let totalPDFs = 0;
   const symbolCounts = new Map<string, number>();
-  submissions.forEach((s: any) => {
-    symbolCounts.set(s.symbol, (symbolCounts.get(s.symbol) || 0) + 1);
+
+  snapshot.docs.forEach((doc) => {
+    const data = doc.data();
+    uniqueEmails.add(data.email);
+    if (data.pdf_generated) totalPDFs++;
+    symbolCounts.set(data.symbol, (symbolCounts.get(data.symbol) || 0) + 1);
   });
 
   const popularSymbols = Array.from(symbolCounts.entries())
@@ -171,7 +206,7 @@ export async function getStats() {
 
   return {
     totalCustomers: uniqueEmails.size,
-    totalSubmissions: submissions.length,
+    totalSubmissions: snapshot.size,
     totalPDFs,
     popularSymbols,
   };
