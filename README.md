@@ -24,13 +24,15 @@ kabu-tax-app/
 ├── packages/
 │   └── database/          # 共通データベースパッケージ
 │       ├── src/
-│       │   ├── client.ts  # Postgres接続
+│       │   ├── client.ts  # Firebase接続
 │       │   ├── queries.ts # クエリ関数
 │       │   └── types.ts   # 型定義
-│       └── schema.sql     # テーブル定義
+│       └── sample_data.ts # サンプルデータ挿入スクリプト
 │
 ├── package.json           # ルート（Turborepo設定）
-└── turbo.json             # Turborepo設定
+├── turbo.json             # Turborepo設定
+├── firestore.rules        # Firestoreセキュリティルール
+└── firestore.indexes.json # Firestoreインデックス定義
 ```
 
 ## 🚀 クイックスタート
@@ -41,28 +43,33 @@ kabu-tax-app/
 npm install
 ```
 
-### 2. 環境変数の設定
+### 2. Firebase プロジェクトのセットアップ
+
+詳しくは [FIREBASE_SETUP.md](./FIREBASE_SETUP.md) を参照してください。
+
+1. Firebase Console でプロジェクトを作成
+2. Firestore データベースを有効化
+3. サービスアカウントキーを取得
+
+### 3. 環境変数の設定
 
 各アプリに `.env.local` ファイルを作成：
 
 **apps/customer/.env.local**
 ```bash
 SEND_MAIL=false
-POSTGRES_URL=postgres://...
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project-id.iam.gserviceaccount.com
 # 他の環境変数は .env.local.example を参照
 ```
 
 **apps/admin/.env.local**
 ```bash
-POSTGRES_URL=postgres://...
-# 他の環境変数は .env.local.example を参照
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project-id.iam.gserviceaccount.com
 ```
-
-詳しくは [DATABASE_SETUP.md](./DATABASE_SETUP.md) を参照してください。
-
-### 3. データベースのセットアップ
-
-[DATABASE_SETUP.md](./DATABASE_SETUP.md) を参照して、Vercel Postgres をセットアップしてください。
 
 ### 4. 開発サーバーの起動
 
@@ -105,7 +112,7 @@ npm run dev:admin
 - 💱 TTS/TTB 為替レート自動適用
 - 📄 PDF レポート生成（日本語対応）
 - 📧 メール送信機能（オプション）
-- 💾 データベースへの自動保存
+- 💾 Firestoreへの自動保存
 
 #### ガイドページ
 
@@ -135,15 +142,27 @@ npm run dev:admin
 
 ## 🗄️ データベース
 
-### テーブル構成
+### Firestore Collections
 
-#### submissions
-- 顧客のPDF生成リクエストを記録
-- メールアドレス、銘柄、通貨、対象年度、取引件数など
+```
+/submissions/{submissionId: string}
+  - email: string
+  - symbol: string
+  - currency: string
+  - years: number[]
+  - transaction_count: number
+  - pdf_generated: boolean
+  - created_at: Timestamp
+  - updated_at: Timestamp
 
-#### transactions
-- 各submissionに紐づく取引データ
-- 日付、売買区分、数量、価格、手数料
+/submissions/{submissionId}/transactions/{transactionId: string}
+  - date: string
+  - activity: "Purchased" | "Sold"
+  - quantity: number
+  - price: number
+  - commission: number | null
+  - created_at: Timestamp
+```
 
 ### データベース操作
 
@@ -169,7 +188,8 @@ const customers = await getAllCustomers();
 - **言語**: TypeScript
 - **スタイリング**: Tailwind CSS
 - **PDF生成**: @react-pdf/renderer
-- **データベース**: Vercel Postgres
+- **データベース**: Firebase Firestore
+- **認証**: Firebase Admin SDK
 - **モノレポ**: Turborepo
 - **Excel処理**: ExcelJS
 - **メール送信**: Resend
@@ -190,21 +210,27 @@ npm run build --workspace=apps/admin
 
 ### Vercelへのデプロイ
 
-#### お客様向けアプリ
+#### 環境変数の設定
 
-1. Vercelで新規プロジェクト作成
-2. Root Directory: `apps/customer`
-3. Framework Preset: Next.js
-4. 環境変数を設定
-5. デプロイ
+Vercel CLIで環境変数を設定：
 
-#### 管理画面
+```bash
+# Firebase環境変数を追加
+echo "your-project-id" | vercel env add FIREBASE_PROJECT_ID production
+echo "firebase-adminsdk-xxxxx@your-project-id.iam.gserviceaccount.com" | vercel env add FIREBASE_CLIENT_EMAIL production
+printf '%s' '-----BEGIN PRIVATE KEY-----
+...
+-----END PRIVATE KEY-----' | vercel env add FIREBASE_PRIVATE_KEY production
+```
 
-1. Vercelで別の新規プロジェクト作成
-2. Root Directory: `apps/admin`
-3. Framework Preset: Next.js
-4. 環境変数を設定
-5. デプロイ
+#### デプロイ
+
+```bash
+# 本番環境にデプロイ
+vercel --prod
+```
+
+詳細は [FIREBASE_SETUP.md](./FIREBASE_SETUP.md) を参照してください。
 
 ## 🧪 テスト
 
@@ -219,7 +245,7 @@ npm run test:ui --workspace=apps/customer
 ## 📚 ドキュメント
 
 - [UI_VARIANTS.md](./UI_VARIANTS.md) - UIバリエーションの詳細
-- [DATABASE_SETUP.md](./DATABASE_SETUP.md) - データベースセットアップガイド
+- [FIREBASE_SETUP.md](./FIREBASE_SETUP.md) - Firebaseセットアップガイド
 - [TESTING.md](./TESTING.md) - テスト実行方法
 
 ## 🤝 開発フロー
