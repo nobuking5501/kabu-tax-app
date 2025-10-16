@@ -15,7 +15,12 @@ export async function loadFxTable(currency: "USD" | "EUR" | "JPY"): Promise<FxRa
     const fs = await import('fs/promises');
     const path = await import('path');
 
-    const filePath = path.join(process.cwd(), 'public', 'fx', `${currency.toLowerCase()}.json`);
+    // Vercel環境では apps/customer がルートになるため、パスを調整
+    const basePath = process.cwd().includes('apps/customer')
+      ? process.cwd()
+      : path.join(process.cwd(), 'apps', 'customer');
+    const filePath = path.join(basePath, 'public', 'fx', `${currency.toLowerCase()}.json`);
+
     try {
       const fileContent = await fs.readFile(filePath, 'utf-8');
       return JSON.parse(fileContent);
