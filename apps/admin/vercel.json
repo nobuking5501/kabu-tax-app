@@ -1,5 +1,4 @@
 {
-  "buildCommand": "npm run build --workspace=apps/customer",
-  "installCommand": "npm install",
-  "outputDirectory": "apps/customer/.next"
+  "installCommand": "npm install --include-workspace-root",
+  "buildCommand": "npx turbo run build --filter=@kabu-tax/customer..."
 }
