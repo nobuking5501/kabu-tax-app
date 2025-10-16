@@ -1,5 +1,4 @@
 {
-  "buildCommand": "npm install && cd apps/customer && npm run build",
-  "outputDirectory": "apps/customer/.next",
-  "installCommand": "npm install --legacy-peer-deps"
+  "buildCommand": "npx turbo run build --filter=@kabu-tax/customer",
+  "outputDirectory": "apps/customer/.next"
 }
