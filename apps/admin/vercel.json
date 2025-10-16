@@ -1,4 +1,0 @@
-{
-  "installCommand": "npm install --workspaces && npm install",
-  "buildCommand": "cd apps/customer && npm run build"
-}
