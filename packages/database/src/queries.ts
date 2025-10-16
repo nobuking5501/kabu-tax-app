@@ -246,6 +246,7 @@ export async function getCustomersWithSubmissions(): Promise<Customer[]> {
         last_submission: createdAt,
         total_submissions: 1,
         total_pdfs: data.pdf_generated ? 1 : 0,
+        payment_count: 0,
       });
     } else {
       existing.total_submissions++;

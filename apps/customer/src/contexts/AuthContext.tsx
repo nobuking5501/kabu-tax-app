@@ -61,7 +61,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // ポップアップを使用してGoogle認証
       const result = await signInWithPopup(auth, provider);
       console.log("🎉 Google認証成功:", result.user.email);
-      return result;
     } catch (error: any) {
       console.error("❌ Google認証エラー:", error);
 
