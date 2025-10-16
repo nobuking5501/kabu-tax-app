@@ -2,6 +2,7 @@
   "name": "@kabu-tax/database",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "npm@10.9.2",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
