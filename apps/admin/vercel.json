@@ -1,4 +1,4 @@
 {
-  "installCommand": "npm install --include-workspace-root",
-  "buildCommand": "npx turbo run build --filter=@kabu-tax/customer..."
+  "installCommand": "npm install --workspaces && npm install",
+  "buildCommand": "cd apps/customer && npm run build"
 }
