@@ -3,11 +3,26 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+interface Customer {
+  email: string;
+  uid?: string;
+  displayName?: string;
+  createdAt?: string;
+  lastSignInTime?: string;
+  first_submission?: string;
+  last_submission?: string;
+  total_submissions: number;
+  total_pdfs: number;
+  payment_count: number;
+  payment_completed?: boolean;
+  last_payment_date?: string;
+}
+
 interface Stats {
   totalCustomers: number;
   totalSubmissions: number;
   totalPDFs: number;
-  popularSymbols: Array<{ symbol: string; count: number }>;
+  recentCustomers: Customer[];
 }
 
 export default function AdminDashboard() {
@@ -135,41 +150,103 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* 人気銘柄ランキング */}
+            {/* 最近の顧客リスト */}
             <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span>🏆</span>
-                人気銘柄トップ5
-              </h2>
-              {stats.popularSymbols.length === 0 ? (
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <span>👥</span>
+                  最近の顧客（最新5件）
+                </h2>
+                <Link
+                  href="/customers"
+                  className="text-indigo-600 hover:text-indigo-800 font-semibold text-sm"
+                >
+                  すべて表示 →
+                </Link>
+              </div>
+              {!stats.recentCustomers || stats.recentCustomers.length === 0 ? (
                 <p className="text-gray-500 text-center py-8">
-                  まだデータがありません
+                  まだ顧客がいません
                 </p>
               ) : (
-                <div className="space-y-3">
-                  {stats.popularSymbols.map((item, index) => (
-                    <div
-                      key={item.symbol}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                    >
-                      <div className="flex items-center gap-4">
-                        <span className="text-2xl font-bold text-gray-400">
-                          #{index + 1}
-                        </span>
-                        <div>
-                          <p className="text-lg font-semibold text-gray-900">
-                            {item.symbol}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-bold text-indigo-600">
-                          {item.count}
-                        </p>
-                        <p className="text-sm text-gray-500">リクエスト</p>
-                      </div>
-                    </div>
-                  ))}
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          名前
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          メールアドレス
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          初回利用日時
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          最終利用日時
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          決済回数
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">
+                          PDF生成数
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {stats.recentCustomers.map((customer) => (
+                        <tr
+                          key={customer.email}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">
+                              {customer.displayName || "-"}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <div className="text-sm text-gray-700">
+                              {customer.email}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                            {customer.first_submission
+                              ? new Date(customer.first_submission).toLocaleDateString(
+                                  "ja-JP",
+                                  {
+                                    year: "numeric",
+                                    month: "2-digit",
+                                    day: "2-digit",
+                                  }
+                                )
+                              : "-"}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                            {customer.last_submission
+                              ? new Date(customer.last_submission).toLocaleDateString(
+                                  "ja-JP",
+                                  {
+                                    year: "numeric",
+                                    month: "2-digit",
+                                    day: "2-digit",
+                                  }
+                                )
+                              : "-"}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                              {customer.payment_count}回
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                              {customer.total_pdfs}件
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>

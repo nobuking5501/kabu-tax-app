@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { getMainLink, getSubLink } from "@/lib/sheetsLinks";
 import FormNavigation from "@/components/FormNavigation";
 
 type Row = {
@@ -34,8 +35,8 @@ export default function Form1Page() {
     return sum + (parseFloat(row.quantity) || 0);
   }, 0);
 
-  // サンプルデータ読み込み
-  const loadSampleData = () => {
+  // サンプルデータ入力（シンプル）
+  const loadSampleDataSimple = () => {
     setEmail("test@example.com");
     setCurrency("USD");
     setStockName("GOOGL");
@@ -44,6 +45,27 @@ export default function Form1Page() {
       { date: "2024-01-10", activity: "Purchased", quantity: "100", fmv: "150", commission: "10" },
       { date: "2024-06-15", activity: "Sold", quantity: "-100", fmv: "180", commission: "5" },
     ]);
+    setValidationErrors([]);
+    setSuccessMessage("");
+    setErrorMessage("");
+  };
+
+  // サンプルデータ入力（複雑）
+  const loadSampleDataComplex = () => {
+    setEmail("test@example.com");
+    setCurrency("USD");
+    setStockName("AAPL");
+    setYears(["2024", "2025", "", "", ""]);
+    setRows([
+      { date: "2024-01-10", activity: "Purchased", quantity: "50", fmv: "100", commission: "5" },
+      { date: "2024-03-15", activity: "Purchased", quantity: "50", fmv: "120", commission: "5" },
+      { date: "2024-06-20", activity: "Sold", quantity: "-75", fmv: "150", commission: "10" },
+      { date: "2024-12-10", activity: "Purchased", quantity: "30", fmv: "140", commission: "3" },
+      { date: "2025-02-15", activity: "Sold", quantity: "-35", fmv: "160", commission: "8" },
+    ]);
+    setValidationErrors([]);
+    setSuccessMessage("");
+    setErrorMessage("");
   };
 
   // 行追加
@@ -65,6 +87,7 @@ export default function Form1Page() {
       return;
     }
     setRows(rows.filter((_, i) => i !== index));
+    setValidationErrors(validationErrors.filter((ei) => ei !== index));
   };
 
   // 入力変更
@@ -72,6 +95,11 @@ export default function Form1Page() {
     const newRows = [...rows];
     newRows[index] = { ...newRows[index], [field]: value };
     setRows(newRows);
+
+    // エラークリア
+    if (validationErrors.includes(index)) {
+      setValidationErrors(validationErrors.filter((ei) => ei !== index));
+    }
   };
 
   // 年度変更
@@ -79,6 +107,31 @@ export default function Form1Page() {
     const newYears = [...years];
     newYears[index] = value;
     setYears(newYears);
+  };
+
+  // 入力サニタイズ
+  const sanitizeQuantity = (value: string) => value.replace(/[^\d.-]/g, "");
+  const sanitizeNumber = (value: string) => value.replace(/[^\d.]/g, "");
+
+  // スプレッドシートリンクを開く
+  const openMainSheet = () => {
+    try {
+      const url = getMainLink();
+      window.open(url, "_blank");
+    } catch (error: any) {
+      alert(error.message || "メインシートのリンクを開けませんでした");
+    }
+  };
+
+  const openSubSheet = () => {
+    try {
+      const url = getSubLink();
+      if (url) {
+        window.open(url, "_blank");
+      }
+    } catch (error: any) {
+      alert(error.message || "サブシートのリンクを開けませんでした");
+    }
   };
 
   // 送信処理
@@ -185,6 +238,9 @@ export default function Form1Page() {
     setStep(step - 1);
   };
 
+  // サブシートのリンクが存在するか確認
+  const hasSubSheet = getSubLink() !== null;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <FormNavigation />
@@ -249,13 +305,41 @@ export default function Form1Page() {
               </h2>
 
               {/* サンプルデータボタン */}
-              <button
-                type="button"
-                onClick={loadSampleData}
-                className="w-full px-4 py-3 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm font-medium transition-colors"
-              >
-                🎯 サンプルデータを読み込む
-              </button>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg
+                    className="w-5 h-5 text-blue-600"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <h3 className="font-semibold text-blue-900">動作確認用サンプルデータ</h3>
+                </div>
+                <p className="text-xs text-blue-700 mb-3">
+                  実装が正しく動作しているか確認するために、サンプルデータを自動入力できます。
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={loadSampleDataSimple}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md shadow-sm transition-colors"
+                  >
+                    📝 シンプル（100株購入→全売却）
+                  </button>
+                  <button
+                    type="button"
+                    onClick={loadSampleDataComplex}
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-md shadow-sm transition-colors"
+                  >
+                    📊 複雑（複数回売買・年度跨ぎ）
+                  </button>
+                </div>
+              </div>
 
               {/* Email */}
               <div>
@@ -322,6 +406,29 @@ export default function Form1Page() {
                 </div>
               </div>
 
+              {/* スプレッドシートで関数位置を開く */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <h3 className="text-sm font-semibold text-gray-700 mb-2">スプレッドシートで関数位置を開く</h3>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={openMainSheet}
+                    className="px-3 py-2 text-sm border border-gray-300 rounded-md bg-white hover:bg-gray-50"
+                  >
+                    テンプレ（メイン）を開く
+                  </button>
+                  {hasSubSheet && (
+                    <button
+                      type="button"
+                      onClick={openSubSheet}
+                      className="px-3 py-2 text-sm border border-gray-300 rounded-md bg-white hover:bg-gray-50"
+                    >
+                      テンプレ（サブ）を開く
+                    </button>
+                  )}
+                </div>
+              </div>
+
               <button
                 type="button"
                 onClick={nextStep}
@@ -345,62 +452,79 @@ export default function Form1Page() {
 
               {/* 取引一覧 */}
               <div className="space-y-3">
-                {rows.map((row, index) => (
-                  <div
-                    key={index}
-                    className="grid grid-cols-6 gap-2 p-4 bg-gray-50 rounded-lg border border-gray-200"
-                  >
-                    <input
-                      type="date"
-                      required
-                      value={row.date}
-                      onChange={(e) => updateRow(index, "date", e.target.value)}
-                      className="col-span-2 px-3 py-2 border border-gray-300 rounded-md text-sm"
-                    />
-                    <select
-                      value={row.activity}
-                      onChange={(e) =>
-                        updateRow(index, "activity", e.target.value as "Purchased" | "Sold")
-                      }
-                      className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                {rows.map((row, index) => {
+                  const hasError = validationErrors.includes(index);
+                  const quantityInputClass = hasError && row.activity === "Sold"
+                    ? "px-3 py-2 border border-gray-300 rounded-md text-sm ring-1 ring-red-500"
+                    : "px-3 py-2 border border-gray-300 rounded-md text-sm";
+
+                  return (
+                    <div
+                      key={index}
+                      className="grid grid-cols-6 gap-2 p-4 bg-gray-50 rounded-lg border border-gray-200"
                     >
-                      <option value="Purchased">購入</option>
-                      <option value="Sold">売却</option>
-                    </select>
-                    <input
-                      type="text"
-                      required
-                      value={row.quantity}
-                      onChange={(e) => updateRow(index, "quantity", e.target.value)}
-                      placeholder="数量"
-                      className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                    />
-                    <input
-                      type="text"
-                      required
-                      value={row.fmv}
-                      onChange={(e) => updateRow(index, "fmv", e.target.value)}
-                      placeholder="価格"
-                      className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                    />
-                    <div className="flex gap-1">
+                      <input
+                        type="date"
+                        required
+                        value={row.date}
+                        max="9999-12-31"
+                        onChange={(e) => updateRow(index, "date", e.target.value)}
+                        className="col-span-2 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      />
+                      <select
+                        value={row.activity}
+                        onChange={(e) =>
+                          updateRow(index, "activity", e.target.value as "Purchased" | "Sold")
+                        }
+                        className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      >
+                        <option value="Purchased">購入</option>
+                        <option value="Sold">売却</option>
+                      </select>
                       <input
                         type="text"
-                        value={row.commission}
-                        onChange={(e) => updateRow(index, "commission", e.target.value)}
-                        placeholder="手数料"
-                        className="flex-1 px-2 py-2 border border-gray-300 rounded-md text-sm"
+                        required
+                        value={row.quantity}
+                        onInput={(e) => {
+                          const sanitized = sanitizeQuantity(e.currentTarget.value);
+                          updateRow(index, "quantity", sanitized);
+                        }}
+                        placeholder="数量"
+                        className={quantityInputClass}
                       />
-                      <button
-                        type="button"
-                        onClick={() => removeRow(index)}
-                        className="px-2 bg-red-500 hover:bg-red-600 text-white rounded-md"
-                      >
-                        ×
-                      </button>
+                      <input
+                        type="text"
+                        required
+                        value={row.fmv}
+                        onInput={(e) => {
+                          const sanitized = sanitizeNumber(e.currentTarget.value);
+                          updateRow(index, "fmv", sanitized);
+                        }}
+                        placeholder="価格"
+                        className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      />
+                      <div className="flex gap-1">
+                        <input
+                          type="text"
+                          value={row.commission}
+                          onInput={(e) => {
+                            const sanitized = sanitizeNumber(e.currentTarget.value);
+                            updateRow(index, "commission", sanitized);
+                          }}
+                          placeholder="手数料"
+                          className="flex-1 px-2 py-2 border border-gray-300 rounded-md text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeRow(index)}
+                          className="px-2 bg-red-500 hover:bg-red-600 text-white rounded-md"
+                        >
+                          ×
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <button

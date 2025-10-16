@@ -5,10 +5,15 @@ import Link from "next/link";
 
 interface Customer {
   email: string;
-  first_submission: string;
-  last_submission: string;
+  uid?: string;
+  displayName?: string;
+  first_submission?: string;
+  last_submission?: string;
   total_submissions: number;
   total_pdfs: number;
+  payment_count: number;
+  payment_completed?: boolean;
+  last_payment_date?: string;
 }
 
 export default function CustomersPage() {
@@ -18,6 +23,7 @@ export default function CustomersPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"email" | "last" | "total">("last");
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCustomers();
@@ -59,9 +65,11 @@ export default function CustomersPage() {
         case "email":
           return a.email.localeCompare(b.email);
         case "last":
-          return new Date(b.last_submission).getTime() - new Date(a.last_submission).getTime();
+          const aLastDate = a.last_submission ? new Date(a.last_submission).getTime() : 0;
+          const bLastDate = b.last_submission ? new Date(b.last_submission).getTime() : 0;
+          return bLastDate - aLastDate;
         case "total":
-          return b.total_submissions - a.total_submissions;
+          return b.payment_count - a.payment_count;
         default:
           return 0;
       }
@@ -70,7 +78,8 @@ export default function CustomersPage() {
     setFilteredCustomers(filtered);
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "-";
     const date = new Date(dateString);
     return date.toLocaleDateString("ja-JP", {
       year: "numeric",
@@ -79,6 +88,42 @@ export default function CustomersPage() {
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  const handleDelete = async (customer: Customer) => {
+    const confirmMessage = `本当に削除しますか？\n\nメールアドレス: ${customer.email}\n名前: ${customer.displayName || "-"}\n\nこの操作は取り消せません。\n- Firebase Authenticationのアカウント\n- Firestoreの決済情報\n- 全ての提出履歴（${customer.total_submissions}件）\n- 全てのPDF（${customer.total_pdfs}件）\n\nが完全に削除されます。`;
+
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      setDeleting(customer.email);
+      const response = await fetch("/api/customers/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: customer.email,
+          uid: customer.uid,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "削除に失敗しました");
+      }
+
+      // 削除成功したら、顧客リストを再取得
+      await fetchCustomers();
+      alert("顧客を削除しました");
+    } catch (err: any) {
+      alert(`エラー: ${err.message}`);
+      console.error(err);
+    } finally {
+      setDeleting(null);
+    }
   };
 
   return (
@@ -144,7 +189,7 @@ export default function CustomersPage() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
                 <option value="last">最終利用日時（新しい順）</option>
-                <option value="total">利用回数（多い順）</option>
+                <option value="total">決済回数（多い順）</option>
                 <option value="email">メールアドレス（昇順）</option>
               </select>
             </div>
@@ -189,6 +234,9 @@ export default function CustomersPage() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      名前
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                       メールアドレス
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
@@ -198,7 +246,7 @@ export default function CustomersPage() {
                       最終利用日時
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      利用回数
+                      決済回数
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                       PDF生成数
@@ -215,10 +263,13 @@ export default function CustomersPage() {
                       className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="text-sm font-medium text-gray-900">
-                            {customer.email}
-                          </div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {customer.displayName || "-"}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-700">
+                          {customer.email}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -233,7 +284,7 @@ export default function CustomersPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                          {customer.total_submissions}回
+                          {customer.payment_count}回
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -241,15 +292,18 @@ export default function CustomersPage() {
                           {customer.total_pdfs}件
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <Link
-                          href={`/customers/${encodeURIComponent(
-                            customer.email
-                          )}`}
-                          className="text-indigo-600 hover:text-indigo-900 font-semibold"
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => handleDelete(customer)}
+                          disabled={deleting === customer.email}
+                          className={`px-3 py-1 text-sm font-semibold rounded-lg transition-colors ${
+                            deleting === customer.email
+                              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                              : "bg-red-100 text-red-700 hover:bg-red-200"
+                          }`}
                         >
-                          詳細 →
-                        </Link>
+                          {deleting === customer.email ? "削除中..." : "削除"}
+                        </button>
                       </td>
                     </tr>
                   ))}

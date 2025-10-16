@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { getMainLink, getSubLink } from "@/lib/sheetsLinks";
 import FormNavigation from "@/components/FormNavigation";
 
@@ -13,7 +14,13 @@ type Row = {
 };
 
 export default function FormPage() {
+  const router = useRouter();
   const today = new Date().toISOString().split("T")[0];
+
+  // このページは廃止されました。form1にリダイレクトします。
+  useEffect(() => {
+    router.replace("/form1");
+  }, [router]);
 
   const [email, setEmail] = useState("");
   const [currency, setCurrency] = useState<"USD" | "EUR">("USD");
@@ -203,18 +210,27 @@ export default function FormPage() {
         throw new Error(error.error || "サーバーエラーが発生しました");
       }
 
-      // 成功: PDFダウンロード
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `kabu-tax-${stockName}-${Date.now()}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      // レスポンスタイプで分岐
+      const contentType = response.headers.get("Content-Type");
 
-      setSuccessMessage("計算結果の取得に成功しました！PDFがダウンロードされました。");
+      if (contentType?.includes("application/json")) {
+        // メール送信成功
+        const result = await response.json();
+        setSuccessMessage(`✅ メール送信に成功しました！\n${email} 宛にPDF付きメールを送信しました。\nメールボックスをご確認ください。`);
+      } else {
+        // PDFダウンロード
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `kabu-tax-${stockName}-${Date.now()}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        setSuccessMessage("✅ 計算結果の取得に成功しました！PDFがダウンロードされました。");
+      }
     } catch (error: any) {
       setErrorMessage(error.message || "エラーが発生しました。もう一度お試しください。");
     } finally {
@@ -287,16 +303,20 @@ export default function FormPage() {
 
           {/* 1) Email セクション */}
           <div className="bg-white border border-gray-200 p-6 rounded-lg">
-            <h2 className="text-xl font-semibold mb-4">Email Address</h2>
+            <h2 className="text-xl font-semibold mb-4">📧 Email Address（送信先）</h2>
             <p className="text-xs text-gray-500 mb-2">
-              計算結果は以下のメールアドレスに送信されます。
+              計算結果のPDFを以下のメールアドレスに送信します。
+            </p>
+            <p className="text-xs text-blue-600 mb-3">
+              💡 メール設定がある場合はメール送信、ない場合はPDFダウンロードになります。
             </p>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm"
+              placeholder="nobuking5501@gmail.com"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -537,34 +557,37 @@ export default function FormPage() {
             className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white text-lg h-12 w-full rounded-md shadow-sm flex items-center justify-center"
           >
             {loading ? (
-              <svg
-                className="animate-spin h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
+              <>
+                <svg
+                  className="animate-spin h-5 w-5 text-white mr-2"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                処理中...
+              </>
             ) : (
-              "計算結果を取得する"
+              "📨 計算結果を送信・取得する"
             )}
           </button>
 
           {/* 成功メッセージ */}
           {successMessage && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md whitespace-pre-line">
               {successMessage}
             </div>
           )}

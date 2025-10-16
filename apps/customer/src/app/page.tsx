@@ -1,27 +1,114 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { useAuth } from "@/contexts/AuthContext";
+import { getUserPaymentData } from "@/lib/firebase/firestore";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { user, loading: authLoading, signInWithGoogle } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const hasCheckedRef = useRef(false); // useRefで管理（再レンダリングを引き起こさない）
 
-  const handleGoogleLogin = () => {
+  // ユーザーがログイン済みの場合、決済状態に応じてリダイレクト
+  useEffect(() => {
+    // 既にチェック済みの場合は何もしない（無限ループ防止）
+    if (hasCheckedRef.current) {
+      console.log("⏭️ 既にチェック済み。処理をスキップ");
+      return;
+    }
+
+    const checkPaymentStatus = async () => {
+      if (user && !authLoading) {
+        console.log("✅ ログイン済みユーザー検出:", user.email);
+        hasCheckedRef.current = true; // 最初にフラグを立てる
+
+        try {
+          // Firestoreから決済状態を取得
+          const paymentData = await getUserPaymentData(user.uid);
+          console.log("📊 決済データ:", paymentData);
+
+          if (paymentData) {
+            // LocalStorageにキャッシュとして保存
+            localStorage.setItem(`payment_${user.uid}`, paymentData.paymentCompleted ? "true" : "false");
+            localStorage.setItem(`retrievalCount_${user.uid}`, paymentData.retrievalCount.toString());
+            localStorage.setItem(`availableRetrievals_${user.uid}`, paymentData.availableRetrievals.toString());
+
+            // 決済済みで取得回数が残っている場合はフォームページへ
+            if (paymentData.paymentCompleted && paymentData.retrievalCount < paymentData.availableRetrievals) {
+              console.log("➡️ /form1 にリダイレクト");
+              router.push("/form1");
+            } else {
+              // 未決済または取得回数を使い切った場合は決済ページへ
+              console.log("➡️ /payment にリダイレクト");
+              router.push("/payment");
+            }
+          } else {
+            // Firestoreにデータがない場合は決済ページへ
+            console.log("➡️ /payment にリダイレクト（データなし）");
+            router.push("/payment");
+          }
+        } catch (error) {
+          console.error("❌ 決済状態チェックエラー:", error);
+          // エラーが発生しても決済ページへ
+          router.push("/payment");
+        }
+      }
+    };
+
+    checkPaymentStatus();
+  }, [user, authLoading, router]);
+
+  const handleGoogleLogin = async () => {
     setLoading(true);
-    // ダミーログイン処理
-    setTimeout(() => {
-      router.push("/payment");
-    }, 1000);
+    setError(null);
+
+    try {
+      await signInWithGoogle();
+      // 認証成功後、useEffectでリダイレクトされる
+    } catch (error: any) {
+      console.error("ログインエラー:", error);
+
+      // Firebase未設定エラーの場合
+      if (error?.message?.includes("Firebase認証が設定されていません")) {
+        setError("Firebase認証が設定されていません。FIREBASE_AUTH_SETUP.md を参照して環境変数を設定してください。");
+      } else {
+        setError("ログインに失敗しました。もう一度お試しください。");
+      }
+      setLoading(false);
+    }
   };
+
+  // 認証状態チェック中
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mb-4"></div>
+          <p className="text-gray-600">読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         {/* ロゴ・タイトル */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">kabu-tax-app</h1>
-          <p className="text-gray-600">株式譲渡益計算アプリケーション</p>
+          <div className="flex justify-center mb-4">
+            <Image
+              src="/logo-200.png"
+              alt="株式譲渡益計算アプリケーション ロゴ"
+              width={200}
+              height={200}
+              priority
+            />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900">株式譲渡益計算アプリケーション</h1>
         </div>
 
         {/* ログインカード */}
@@ -33,6 +120,41 @@ export default function LoginPage() {
           <p className="text-sm text-gray-600 text-center mb-8">
             サービスを利用するにはログインしてください
           </p>
+
+          {/* エラーメッセージ */}
+          {error && (
+            <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-start gap-2">
+                <svg
+                  className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <div className="flex-1">
+                  <p className="text-sm text-red-700 mb-2">{error}</p>
+                  {error.includes("Firebase認証が設定されていません") && (
+                    <div className="text-xs text-red-600 bg-red-100 rounded p-2">
+                      <p className="font-medium mb-1">セットアップ手順:</p>
+                      <ol className="list-decimal list-inside space-y-1">
+                        <li>プロジェクトルートの <code className="bg-red-200 px-1 rounded">FIREBASE_AUTH_SETUP.md</code> を確認</li>
+                        <li>Firebaseプロジェクトを作成してGoogle認証を有効化</li>
+                        <li><code className="bg-red-200 px-1 rounded">.env.local</code> に環境変数を設定</li>
+                        <li>開発サーバーを再起動</li>
+                      </ol>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Google ログインボタン */}
           <button

@@ -13,12 +13,15 @@
   "dependencies": {
     "@kabu-tax/database": "file:../../packages/database",
     "@react-pdf/renderer": "^4.3.1",
+    "@stripe/stripe-js": "^8.0.0",
     "@vercel/postgres": "^0.10.0",
     "exceljs": "^4.4.0",
+    "firebase": "^12.4.0",
     "next": "^14.2.23",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "resend": "^6.1.2"
+    "resend": "^6.1.2",
+    "stripe": "^19.1.0"
   },
   "devDependencies": {
     "@types/node": "^24.7.0",

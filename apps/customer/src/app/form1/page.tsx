@@ -1,7 +1,11 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import FormNavigation from "@/components/FormNavigation";
+import PaymentGuard from "@/components/PaymentGuard";
+import { useAuth } from "@/contexts/AuthContext";
+import { incrementRetrievalCount, getUserPaymentData } from "@/lib/firebase/firestore";
 
 type Row = {
   date: string;
@@ -12,6 +16,8 @@ type Row = {
 };
 
 export default function Form1Page() {
+  const router = useRouter();
+  const { user } = useAuth();
   const today = new Date().toISOString().split("T")[0];
 
   // フォームステート
@@ -28,6 +34,34 @@ export default function Form1Page() {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [validationErrors, setValidationErrors] = useState<number[]>([]);
+
+  // 取得回数制限（LocalStorageから読み込み）
+  const [retrievalCount, setRetrievalCount] = useState(0);
+  const [availableRetrievals, setAvailableRetrievals] = useState(0);
+  const [isPaymentCompleted, setIsPaymentCompleted] = useState(false);
+
+  // 初期化時にFirestoreから取得回数を読み込む（Firebase UID対応）
+  useEffect(() => {
+    if (!user) return;
+
+    const loadPaymentData = async () => {
+      // Firestoreから最新の決済情報を取得
+      const paymentData = await getUserPaymentData(user.uid);
+
+      if (paymentData) {
+        setRetrievalCount(paymentData.retrievalCount);
+        setAvailableRetrievals(paymentData.availableRetrievals);
+        setIsPaymentCompleted(paymentData.paymentCompleted);
+
+        // LocalStorageにキャッシュとして保存（パフォーマンス向上のため）
+        localStorage.setItem(`retrievalCount_${user.uid}`, paymentData.retrievalCount.toString());
+        localStorage.setItem(`availableRetrievals_${user.uid}`, paymentData.availableRetrievals.toString());
+        localStorage.setItem(`payment_${user.uid}`, paymentData.paymentCompleted ? "true" : "false");
+      }
+    };
+
+    loadPaymentData();
+  }, [user]);
 
   // 保有株式数計算
   const holdings = rows.reduce((sum, row) => {
@@ -87,6 +121,34 @@ export default function Form1Page() {
     setSuccessMessage("");
     setErrorMessage("");
     setValidationErrors([]);
+
+    // 決済完了状態を確認（Firebase UID対応）
+    if (!user) {
+      setErrorMessage("ログインが必要です");
+      setLoading(false);
+      return;
+    }
+
+    const paymentCompleted = localStorage.getItem(`payment_${user.uid}`);
+    const available = parseInt(localStorage.getItem(`availableRetrievals_${user.uid}`) || "0", 10);
+    const currentCount = parseInt(localStorage.getItem(`retrievalCount_${user.uid}`) || "0", 10);
+
+    // 取得回数制限チェック
+    if (paymentCompleted !== "true" || currentCount >= available) {
+      alert("取得回数を超えました。決済ページに移動します。");
+      router.push("/payment");
+      return;
+    }
+
+    // 取得回数に応じた警告表示
+    const remaining = available - currentCount;
+    if (remaining === 3) {
+      alert("今回の決済で3回取得できます。残り2回です。");
+    } else if (remaining === 2) {
+      alert("残り1回取得できます。");
+    } else if (remaining === 1) {
+      alert("これが最後の取得です。次回は再度決済が必要です。");
+    }
 
     // バリデーション
     const errors: number[] = [];
@@ -148,17 +210,62 @@ export default function Form1Page() {
         throw new Error(error.error || "サーバーエラーが発生しました");
       }
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `kabu-tax-${stockName}-${Date.now()}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      // レスポンスタイプで分岐
+      const contentType = response.headers.get("Content-Type");
 
-      setSuccessMessage("計算結果の取得に成功しました！PDFがダウンロードされました。");
+      if (contentType?.includes("application/json")) {
+        // メール送信成功
+        const result = await response.json();
+        setSuccessMessage(`✅ メール送信に成功しました！\n${email} 宛にPDF付きメールを送信しました。\nメールボックスをご確認ください。`);
+      } else {
+        // PDFダウンロード
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `kabu-tax-${stockName}-${Date.now()}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        setSuccessMessage("✅ 計算結果の取得に成功しました！PDFがダウンロードされました。");
+      }
+
+      // 取得回数をインクリメント（Firestoreに保存・Firebase UID対応）
+      if (!user) return;
+
+      // Firestoreの取得回数を更新
+      const incrementSuccess = await incrementRetrievalCount(user.uid);
+
+      if (incrementSuccess) {
+        const newCount = retrievalCount + 1;
+        setRetrievalCount(newCount);
+
+        // LocalStorageにキャッシュとして保存
+        localStorage.setItem(`retrievalCount_${user.uid}`, newCount.toString());
+        // 後方互換性のため古いキーも更新
+        localStorage.setItem("retrievalCount", newCount.toString());
+
+        // 取得可能回数を確認（Firebase UID対応）
+        const available = parseInt(localStorage.getItem(`availableRetrievals_${user.uid}`) || "0", 10);
+
+        // 取得可能回数に達した場合、決済ページにリダイレクト
+        if (newCount >= available) {
+          // 決済完了フラグをクリア（再度決済が必要）
+          localStorage.removeItem(`payment_${user.uid}`);
+          localStorage.removeItem(`stripe_session_id_${user.uid}`);
+          // 後方互換性のため古いキーも削除
+          localStorage.removeItem("stripe_payment_completed");
+          localStorage.removeItem("stripe_session_id");
+
+          setTimeout(() => {
+            router.push("/payment");
+          }, 2000); // 2秒後にリダイレクト（成功メッセージを表示するため）
+        }
+      } else {
+        console.error("Firestoreの取得回数更新に失敗しました");
+      }
     } catch (error: any) {
       setErrorMessage(error.message || "エラーが発生しました。もう一度お試しください。");
     } finally {
@@ -186,10 +293,42 @@ export default function Form1Page() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <FormNavigation />
+    <PaymentGuard>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <FormNavigation />
 
       <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* 取得回数表示 */}
+        {isPaymentCompleted && availableRetrievals > 0 && (
+          <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <svg
+                  className="w-5 h-5 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span className="text-sm font-medium text-blue-900">
+                  利用回数: {retrievalCount}/{availableRetrievals}回 使用済み
+                </span>
+              </div>
+              {retrievalCount < availableRetrievals && (
+                <span className="text-xs text-blue-700">
+                  あと{availableRetrievals - retrievalCount}回利用できます
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* 進捗バー */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
@@ -235,7 +374,7 @@ export default function Form1Page() {
 
         {/* 成功メッセージ */}
         {successMessage && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg whitespace-pre-line">
             {successMessage}
           </div>
         )}
@@ -262,6 +401,12 @@ export default function Form1Page() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   メールアドレス *
                 </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  計算結果のPDFを以下のメールアドレスに送信します。
+                </p>
+                <p className="text-xs text-blue-600 mb-3">
+                  💡 メール設定がある場合はメール送信、ない場合はPDFダウンロードになります。
+                </p>
                 <input
                   type="email"
                   required
@@ -483,7 +628,7 @@ export default function Form1Page() {
               </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
-                📄 送信ボタンを押すと、計算結果がPDFでダウンロードされます。
+                📄 送信ボタンを押すと、メール設定がある場合はPDF付きメールが送信され、ない場合はPDFがダウンロードされます。
               </div>
 
               <div className="flex gap-4">
@@ -521,7 +666,7 @@ export default function Form1Page() {
                       処理中...
                     </>
                   ) : (
-                    "📥 計算結果を取得する"
+                    "📨 計算結果を送信・取得する"
                   )}
                 </button>
               </div>
@@ -540,6 +685,7 @@ export default function Form1Page() {
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </PaymentGuard>
   );
 }

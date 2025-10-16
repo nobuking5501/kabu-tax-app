@@ -1,9 +1,11 @@
 import * as admin from "firebase-admin";
 import { getFirestore, Firestore } from "firebase-admin/firestore";
+import { getAuth, Auth } from "firebase-admin/auth";
 
 // グローバルなFirebaseアプリインスタンス
 let firebaseApp: admin.app.App | null = null;
 let firestoreInstance: Firestore | null = null;
+let authInstance: Auth | null = null;
 
 export function getFirebaseApp(): admin.app.App {
   if (!firebaseApp) {
@@ -40,6 +42,14 @@ export function getFirestoreClient(): Firestore {
     firestoreInstance = getFirestore(app);
   }
   return firestoreInstance;
+}
+
+export function getAuthClient(): Auth {
+  if (!authInstance) {
+    const app = getFirebaseApp();
+    authInstance = getAuth(app);
+  }
+  return authInstance;
 }
 
 // 後方互換性のため（非推奨）

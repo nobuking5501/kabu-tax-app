@@ -1,4 +1,4 @@
-import { getFirestoreClient } from "./client";
+import { getFirestoreClient, getAuthClient } from "./client";
 import type { Submission, Transaction, Customer } from "./types";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 
@@ -131,6 +131,98 @@ export async function getTransactionsBySubmission(
 
 // Customer関連
 export async function getAllCustomers(): Promise<Customer[]> {
+  const auth = getAuthClient();
+  const db = getFirestoreClient();
+
+  // Firebase Authenticationからユーザー一覧を取得
+  const listUsersResult = await auth.listUsers();
+  const authUsersMap = new Map<string, Customer>();
+
+  listUsersResult.users.forEach((user) => {
+    if (user.email) {
+      authUsersMap.set(user.email, {
+        email: user.email,
+        uid: user.uid,
+        displayName: user.displayName || undefined,
+        photoURL: user.photoURL || undefined,
+        createdAt: new Date(user.metadata.creationTime),
+        lastSignInTime: user.metadata.lastSignInTime
+          ? new Date(user.metadata.lastSignInTime)
+          : undefined,
+        total_submissions: 0,
+        total_pdfs: 0,
+        payment_count: 0,
+      });
+    }
+  });
+
+  // Firestoreから決済情報を取得（usersコレクション）
+  const usersSnapshot = await db.collection("users").get();
+
+  usersSnapshot.docs.forEach((doc) => {
+    const data = doc.data();
+    const uid = doc.id;
+
+    // UIDからメールアドレスを探す
+    for (const [email, customer] of authUsersMap.entries()) {
+      if (customer.uid === uid) {
+        // 決済情報をマージ
+        if (data.paymentCompleted) {
+          customer.payment_count = 1; // 現在は1回のみ対応
+          customer.payment_completed = data.paymentCompleted;
+          customer.last_payment_date = data.paymentDate?.toDate() || undefined;
+        }
+        break;
+      }
+    }
+  });
+
+  // Firestoreから提出履歴を取得してマージ
+  const snapshot = await db
+    .collection("submissions")
+    .orderBy("created_at", "desc")
+    .get();
+
+  snapshot.docs.forEach((doc) => {
+    const data = doc.data();
+    const email = data.email;
+    const createdAt = data.created_at?.toDate() || new Date();
+
+    let customer = authUsersMap.get(email);
+
+    if (!customer) {
+      // Firebase Authに存在しないメールアドレス（旧データなど）
+      customer = {
+        email: email,
+        total_submissions: 0,
+        total_pdfs: 0,
+        payment_count: 0,
+      };
+      authUsersMap.set(email, customer);
+    }
+
+    // 提出履歴を集計
+    customer.total_submissions++;
+    if (data.pdf_generated) customer.total_pdfs++;
+
+    if (!customer.first_submission || createdAt < customer.first_submission) {
+      customer.first_submission = createdAt;
+    }
+    if (!customer.last_submission || createdAt > customer.last_submission) {
+      customer.last_submission = createdAt;
+    }
+  });
+
+  // 最終ログイン日時または最終提出日時でソート
+  return Array.from(authUsersMap.values()).sort((a, b) => {
+    const aDate = a.last_submission || a.lastSignInTime || a.createdAt || new Date(0);
+    const bDate = b.last_submission || b.lastSignInTime || b.createdAt || new Date(0);
+    return bDate.getTime() - aDate.getTime();
+  });
+}
+
+// 提出履歴があるお客様のみを取得（旧関数、後方互換性のため残す）
+export async function getCustomersWithSubmissions(): Promise<Customer[]> {
   const db = getFirestoreClient();
 
   const snapshot = await db
@@ -158,18 +250,68 @@ export async function getAllCustomers(): Promise<Customer[]> {
     } else {
       existing.total_submissions++;
       if (data.pdf_generated) existing.total_pdfs++;
-      if (createdAt < existing.first_submission) {
+      if (createdAt < (existing.first_submission || new Date())) {
         existing.first_submission = createdAt;
       }
-      if (createdAt > existing.last_submission) {
+      if (createdAt > (existing.last_submission || new Date(0))) {
         existing.last_submission = createdAt;
       }
     }
   });
 
-  return Array.from(customerMap.values()).sort(
-    (a, b) => b.last_submission.getTime() - a.last_submission.getTime()
-  );
+  return Array.from(customerMap.values()).sort((a, b) => {
+    const aDate = a.last_submission || new Date(0);
+    const bDate = b.last_submission || new Date(0);
+    return bDate.getTime() - aDate.getTime();
+  });
+}
+
+// 顧客削除
+export async function deleteCustomer(email: string, uid?: string): Promise<void> {
+  const auth = getAuthClient();
+  const db = getFirestoreClient();
+
+  // Firebase Authenticationからユーザーを削除
+  if (uid) {
+    try {
+      await auth.deleteUser(uid);
+    } catch (error: any) {
+      // ユーザーが既に削除されている場合はエラーを無視
+      if (error.code !== "auth/user-not-found") {
+        throw error;
+      }
+    }
+  }
+
+  // Firestoreのusersコレクションから削除
+  if (uid) {
+    try {
+      await db.collection("users").doc(uid).delete();
+    } catch (error) {
+      console.error("users削除エラー:", error);
+    }
+  }
+
+  // Firestoreのsubmissionsコレクションから該当するメールアドレスのドキュメントを削除
+  const submissionsSnapshot = await db
+    .collection("submissions")
+    .where("email", "==", email)
+    .get();
+
+  const batch = db.batch();
+
+  for (const doc of submissionsSnapshot.docs) {
+    // サブコレクションのtransactionsも削除
+    const transactionsSnapshot = await doc.ref.collection("transactions").get();
+    transactionsSnapshot.docs.forEach((transactionDoc) => {
+      batch.delete(transactionDoc.ref);
+    });
+
+    // submissionドキュメント自体も削除
+    batch.delete(doc.ref);
+  }
+
+  await batch.commit();
 }
 
 // 統計

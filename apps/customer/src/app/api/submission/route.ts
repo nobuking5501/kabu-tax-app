@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { calcMovingAverage } from "@/lib/engine/movingAverage";
 import { renderReportToBuffer } from "@/lib/pdf/render";
-import { sendMailWithAttachment } from "@/lib/mail/resend";
+import { sendMailWithAttachment as sendMailWithResend } from "@/lib/mail/resend";
+import { sendMailWithAttachment as sendMailWithGmail } from "@/lib/mail/gmail";
 import type { SubmissionInput } from "@/lib/engine/types";
 import { createSubmission, createTransaction } from "@kabu-tax/database";
 
@@ -23,6 +24,10 @@ export async function POST(request: NextRequest) {
 
     if (!body.years || body.years.length === 0) {
       return NextResponse.json({ error: "対象年度を選択してください" }, { status: 422 });
+    }
+
+    if (body.years.length > 5) {
+      return NextResponse.json({ error: "対象年度は最大5件までです" }, { status: 422 });
     }
 
     if (!body.transactions || body.transactions.length === 0) {
@@ -88,7 +93,6 @@ export async function POST(request: NextRequest) {
     const pdfBytes = await renderReportToBuffer(result, body.email);
 
     const filename = `kabu-tax-${body.symbol}-${Date.now()}.pdf`;
-    const sendMail = process.env.SEND_MAIL === "true";
 
     // データベースに保存
     try {
@@ -116,30 +120,127 @@ export async function POST(request: NextRequest) {
       // データベース保存に失敗してもPDF生成は継続
     }
 
-    // メール送信モード
-    if (sendMail) {
-      await sendMailWithAttachment({
-        to: body.email,
-        subject: `【kabu-tax-app】${body.symbol} 譲渡益計算レポート`,
-        text: `
-${body.email} 様
+    // メール送信判定
+    const mailProvider = process.env.MAIL_PROVIDER || "none";
 
-株式譲渡益計算レポート（移動平均法）を添付いたします。
+    console.log("========================================");
+    console.log("📋 [API] 環境変数チェック");
+    console.log("========================================");
+    console.log("MAIL_PROVIDER:", mailProvider);
+    console.log("RESEND_API_KEY:", process.env.RESEND_API_KEY ? `✅ 設定済み (${process.env.RESEND_API_KEY.substring(0, 10)}...)` : "❌ 未設定");
+    console.log("RESEND_FROM_EMAIL:", process.env.RESEND_FROM_EMAIL || "未設定");
+    console.log("GMAIL_USER:", process.env.GMAIL_USER || "未設定");
+    console.log("GMAIL_APP_PASSWORD:", process.env.GMAIL_APP_PASSWORD ? "✅ 設定済み" : "❌ 未設定");
+    console.log("========================================");
+
+    // テストモード
+    if (mailProvider === "test") {
+      console.log("========================================");
+      console.log("📧 [TEST MODE] メール送信シミュレーション");
+      console.log("========================================");
+      console.log("送信先:", body.email);
+      console.log("件名: 【計算結果のご連絡】株式譲渡所得の自動計算ツール");
+      console.log("銘柄:", body.symbol);
+      console.log("通貨:", result.currency);
+      console.log("対象年度:", result.years.join(", "));
+      console.log("PDF ファイル名:", filename);
+      console.log("PDF サイズ:", pdfBytes.length, "bytes");
+      console.log("========================================");
+      console.log("✅ テストモードなので実際のメールは送信されません");
+      console.log("========================================");
+
+      return NextResponse.json({
+        ok: true,
+        message: "メール送信シミュレーション成功（テストモード）\nサーバーログを確認してください"
+      });
+    }
+
+    const hasResendConfig =
+      mailProvider === "resend" &&
+      process.env.RESEND_API_KEY &&
+      process.env.RESEND_FROM_EMAIL;
+
+    // Resend メール送信モード
+    if (hasResendConfig) {
+      try {
+        console.log("📧 Resend でメール送信中...", body.email);
+
+        await sendMailWithResend({
+          to: body.email,
+          subject: "株式取引情報",
+          text: `榧野国際税務会計事務所です。
+
+フォームに基づく計算結果のPDFをお送りします。
 
 銘柄: ${body.symbol}
 通貨: ${result.currency}
 対象年度: ${result.years.join(", ")}
 
-ご確認のほどよろしくお願いいたします。
+ご不明点は本メールにご返信ください。
 
 ---
-〇〇国際税務会計事務所
-        `.trim(),
-        filename,
-        bytes: pdfBytes,
-      });
+榧野国際税務会計事務所`,
+          filename,
+          bytes: pdfBytes,
+        });
 
-      return NextResponse.json({ ok: true, message: "メール送信が完了しました" });
+        console.log("✅ メール送信成功:", body.email);
+        return NextResponse.json({ ok: true, message: "メール送信が完了しました" });
+      } catch (mailError: any) {
+        console.error("❌ メール送信エラー:", mailError);
+        // メール送信に失敗した場合はPDFダウンロードにフォールバック
+        return new NextResponse(new Uint8Array(pdfBytes), {
+          status: 200,
+          headers: {
+            "Content-Type": "application/pdf",
+            "Content-Disposition": `attachment; filename="${filename}"`,
+          },
+        });
+      }
+    }
+
+    // Gmail SMTP メール送信モード
+    const hasGmailConfig =
+      mailProvider === "gmail" &&
+      process.env.GMAIL_USER &&
+      process.env.GMAIL_APP_PASSWORD;
+
+    if (hasGmailConfig) {
+      try {
+        console.log("📧 Gmail SMTP でメール送信中...", body.email);
+
+        await sendMailWithGmail({
+          to: body.email,
+          subject: "株式取引情報",
+          text: `榧野国際税務会計事務所です。
+
+フォームに基づく計算結果のPDFをお送りします。
+
+銘柄: ${body.symbol}
+通貨: ${result.currency}
+対象年度: ${result.years.join(", ")}
+
+ご不明点は本メールにご返信ください。
+
+---
+榧野国際税務会計事務所`,
+          filename,
+          bytes: pdfBytes,
+        });
+
+        console.log("✅ メール送信成功:", body.email);
+        return NextResponse.json({ ok: true, message: "メール送信が完了しました" });
+      } catch (mailError: any) {
+        console.error("❌ メール送信エラー:", mailError);
+        // メール送信に失敗した場合はPDFダウンロードにフォールバック
+        return new NextResponse(new Uint8Array(pdfBytes), {
+          status: 200,
+          headers: {
+            "Content-Type": "application/pdf",
+            "Content-Disposition": `attachment; filename="${filename}"`,
+          },
+        });
+      }
     }
 
     // PDFダウンロードモード

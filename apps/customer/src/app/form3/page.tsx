@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, FormEvent, useMemo } from "react";
+import { useState, FormEvent, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import FormNavigation from "@/components/FormNavigation";
 
 type Row = {
@@ -12,7 +13,13 @@ type Row = {
 };
 
 export default function Form3Page() {
+  const router = useRouter();
   const today = new Date().toISOString().split("T")[0];
+
+  // このページは廃止されました。form1にリダイレクトします。
+  useEffect(() => {
+    router.replace("/form1");
+  }, [router]);
 
   const [email, setEmail] = useState("");
   const [currency, setCurrency] = useState<"USD" | "EUR">("USD");

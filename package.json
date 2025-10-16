@@ -16,6 +16,11 @@
     "dev:admin": "npm run dev --workspace=apps/admin"
   },
   "devDependencies": {
+    "@anthropic-ai/claude-code": "^2.0.19",
     "turbo": "^2.3.3"
+  },
+  "dependencies": {
+    "@types/nodemailer": "^7.0.2",
+    "nodemailer": "^7.0.9"
   }
 }
