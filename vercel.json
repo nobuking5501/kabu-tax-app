@@ -1,0 +1,5 @@
+{
+  "buildCommand": "npm install && cd apps/customer && npm run build",
+  "outputDirectory": "apps/customer/.next",
+  "installCommand": "npm install --legacy-peer-deps"
+}
