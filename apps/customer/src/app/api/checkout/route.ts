@@ -19,8 +19,12 @@ export async function POST(req: NextRequest) {
     const { priceId } = await req.json();
 
     // APP_URLの取得（デフォルト値を設定）
-    const appUrl = process.env.APP_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://kabu-tax-app.vercel.app");
+    // 環境変数から改行やスペースを除去
+    const rawAppUrl = process.env.APP_URL?.trim();
+    const rawVercelUrl = process.env.VERCEL_URL?.trim();
+
+    const appUrl = rawAppUrl ||
+      (rawVercelUrl ? `https://${rawVercelUrl}` : "https://kabu-tax-app.vercel.app");
 
     console.log("========================================");
     console.log("📋 [Stripe Checkout] 環境変数チェック");
