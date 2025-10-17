@@ -6,7 +6,13 @@ if (!process.env.STRIPE_SECRET_KEY) {
   console.error("STRIPE_SECRET_KEY is not set");
 }
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+// Stripe SDKの初期化（Vercel環境用の設定を追加）
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2025-09-30.clover",
+  maxNetworkRetries: 3,
+  timeout: 60000, // 60秒
+  httpClient: Stripe.createFetchHttpClient(),
+});
 
 export async function POST(req: NextRequest) {
   try {
