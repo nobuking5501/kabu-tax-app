@@ -9,26 +9,25 @@ export async function loadFxTable(currency: "USD" | "EUR" | "JPY"): Promise<FxRa
     return [];
   }
 
-  // サーバーサイドの場合はfsを使用、クライアントサイドの場合はfetchを使用
+  // サーバーサイドの場合はdynamic importを使用、クライアントサイドの場合はfetchを使用
   if (typeof window === 'undefined') {
-    // サーバーサイド
-    const fs = await import('fs/promises');
-    const path = await import('path');
-
-    // Vercel環境では apps/customer がルートになるため、パスを調整
-    const basePath = process.cwd().includes('apps/customer')
-      ? process.cwd()
-      : path.join(process.cwd(), 'apps', 'customer');
-    const filePath = path.join(basePath, 'public', 'fx', `${currency.toLowerCase()}.json`);
-
+    // サーバーサイド - src/data/fx/ からdynamic importで読み込み
     try {
-      const fileContent = await fs.readFile(filePath, 'utf-8');
-      return JSON.parse(fileContent);
+      if (currency === 'USD') {
+        const data = await import('@/data/fx/usd.json');
+        return data.default as FxRate[];
+      } else if (currency === 'EUR') {
+        const data = await import('@/data/fx/eur.json');
+        return data.default as FxRate[];
+      } else {
+        throw new Error(`未対応の通貨: ${currency}`);
+      }
     } catch (error) {
+      console.error('FXデータ読み込みエラー:', error);
       throw new Error(`FXデータの読み込みに失敗しました: ${currency}`);
     }
   } else {
-    // クライアントサイド
+    // クライアントサイド - public/fx/ からfetchで読み込み
     const path = `/fx/${currency.toLowerCase()}.json`;
     const res = await fetch(path);
     if (!res.ok) {
