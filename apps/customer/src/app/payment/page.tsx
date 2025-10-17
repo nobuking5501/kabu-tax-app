@@ -51,19 +51,14 @@ export default function PaymentPage() {
         {/* ヘッダー */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">お支払い</h1>
-          <p className="text-gray-600">kabu-tax-app プレミアムプラン</p>
+          <p className="text-gray-600">株式譲渡益計算アプリケーション</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* 左側: プラン情報 */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4">プラン詳細</h2>
+            <h2 className="text-xl font-semibold mb-4">サービス詳細</h2>
             <div className="space-y-4">
-              <div className="flex justify-between items-center pb-4 border-b">
-                <span className="text-gray-600">プレミアムプラン</span>
-                <span className="text-2xl font-bold text-gray-900">¥2,980</span>
-              </div>
-
               <div className="space-y-3">
                 <h3 className="font-medium text-gray-900">含まれる機能:</h3>
                 <ul className="space-y-2 text-sm text-gray-600">
@@ -284,7 +279,7 @@ export default function PaymentPage() {
                         d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
                       />
                     </svg>
-                    <span>Stripe で ¥2,980 を支払う</span>
+                    <span>Stripe で決済</span>
                   </>
                 )}
               </button>
