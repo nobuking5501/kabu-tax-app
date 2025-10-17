@@ -78,7 +78,7 @@ function PaymentSuccessContent() {
             決済が完了しました
           </h1>
           <p className="text-gray-600 mb-8">
-            kabu-tax-app プレミアムプランへようこそ
+            株式譲渡益計算アプリケーションへようこそ
           </p>
 
           {/* セッションID（デバッグ用） */}
