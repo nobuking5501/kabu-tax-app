@@ -18,9 +18,30 @@ export async function POST(req: NextRequest) {
   try {
     const { priceId } = await req.json();
 
-    console.log("Creating Checkout Session with:");
-    console.log("- Price ID:", priceId || process.env.STRIPE_PRICE_ID);
-    console.log("- APP_URL:", process.env.APP_URL);
+    // APP_URLの取得（デフォルト値を設定）
+    const appUrl = process.env.APP_URL ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://kabu-tax-app.vercel.app");
+
+    console.log("========================================");
+    console.log("📋 [Stripe Checkout] 環境変数チェック");
+    console.log("========================================");
+    console.log("APP_URL (raw):", process.env.APP_URL);
+    console.log("VERCEL_URL:", process.env.VERCEL_URL);
+    console.log("APP_URL (resolved):", appUrl);
+    console.log("Price ID:", priceId || process.env.STRIPE_PRICE_ID);
+    console.log("STRIPE_SECRET_KEY:", process.env.STRIPE_SECRET_KEY ? "✅ 設定済み" : "❌ 未設定");
+    console.log("========================================");
+
+    // URLバリデーション
+    if (!appUrl || !appUrl.startsWith("http")) {
+      throw new Error(`Invalid APP_URL: ${appUrl}`);
+    }
+
+    const successUrl = `${appUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${appUrl}/payment`;
+
+    console.log("Success URL:", successUrl);
+    console.log("Cancel URL:", cancelUrl);
 
     // Checkout Sessionを作成
     const session = await stripe.checkout.sessions.create({
@@ -32,8 +53,8 @@ export async function POST(req: NextRequest) {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.APP_URL}/payment`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       // メタデータとして追加情報を保存可能
       metadata: {
         // 将来的にユーザーIDなどを保存
