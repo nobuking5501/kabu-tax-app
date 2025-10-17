@@ -26,19 +26,28 @@ export async function POST(req: NextRequest) {
     const appUrl = rawAppUrl ||
       (rawVercelUrl ? `https://${rawVercelUrl}` : "https://kabu-tax-app.vercel.app");
 
+    // Price IDも改行やスペースを除去
+    const stripePriceId = (priceId || process.env.STRIPE_PRICE_ID)?.trim();
+
     console.log("========================================");
     console.log("📋 [Stripe Checkout] 環境変数チェック");
     console.log("========================================");
     console.log("APP_URL (raw):", process.env.APP_URL);
     console.log("VERCEL_URL:", process.env.VERCEL_URL);
     console.log("APP_URL (resolved):", appUrl);
-    console.log("Price ID:", priceId || process.env.STRIPE_PRICE_ID);
+    console.log("STRIPE_PRICE_ID (raw):", process.env.STRIPE_PRICE_ID);
+    console.log("STRIPE_PRICE_ID (trimmed):", stripePriceId);
     console.log("STRIPE_SECRET_KEY:", process.env.STRIPE_SECRET_KEY ? "✅ 設定済み" : "❌ 未設定");
     console.log("========================================");
 
     // URLバリデーション
     if (!appUrl || !appUrl.startsWith("http")) {
       throw new Error(`Invalid APP_URL: ${appUrl}`);
+    }
+
+    // Price IDバリデーション
+    if (!stripePriceId) {
+      throw new Error("STRIPE_PRICE_ID is not set");
     }
 
     const successUrl = `${appUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`;
@@ -53,7 +62,7 @@ export async function POST(req: NextRequest) {
       payment_method_types: ["card"],
       line_items: [
         {
-          price: priceId || process.env.STRIPE_PRICE_ID,
+          price: stripePriceId,
           quantity: 1,
         },
       ],
