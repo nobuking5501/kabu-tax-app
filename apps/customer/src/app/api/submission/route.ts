@@ -96,6 +96,11 @@ export async function POST(request: NextRequest) {
 
     // データベースに保存
     try {
+      console.log("=== データベース保存開始 ===");
+      console.log("FIREBASE_PROJECT_ID:", process.env.FIREBASE_PROJECT_ID);
+      console.log("FIREBASE_CLIENT_EMAIL:", process.env.FIREBASE_CLIENT_EMAIL);
+      console.log("FIREBASE_PRIVATE_KEY exists:", !!process.env.FIREBASE_PRIVATE_KEY);
+
       const submissionId = await createSubmission({
         email: body.email,
         symbol: body.symbol,
@@ -103,6 +108,8 @@ export async function POST(request: NextRequest) {
         years: body.years,
         transaction_count: body.transactions.length,
       });
+
+      console.log("✅ Submission作成成功:", submissionId);
 
       // 各取引をデータベースに保存
       for (const tx of body.transactions) {
@@ -115,8 +122,15 @@ export async function POST(request: NextRequest) {
           commission: tx.commission,
         });
       }
-    } catch (dbError) {
-      console.error("データベース保存エラー:", dbError);
+
+      console.log("✅ Transactions保存成功");
+      console.log("=== データベース保存完了 ===");
+    } catch (dbError: any) {
+      console.error("=== データベース保存エラー ===");
+      console.error("Error:", dbError);
+      console.error("Error message:", dbError.message);
+      console.error("Error stack:", dbError.stack);
+      console.error("==========================");
       // データベース保存に失敗してもPDF生成は継続
     }
 
