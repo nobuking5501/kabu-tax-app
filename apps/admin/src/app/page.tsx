@@ -280,25 +280,6 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* データがない場合 */}
-        {!loading && !error && stats && stats.totalSubmissions === 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-8 text-center mt-6">
-            <div className="text-6xl mb-4">📭</div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
-              まだデータがありません
-            </h3>
-            <p className="text-gray-600 mb-4">
-              お客様向けアプリからPDFが生成されると、ここに統計が表示されます。
-            </p>
-            <Link
-              href="http://localhost:3001/form"
-              target="_blank"
-              className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
-            >
-              お客様向けアプリを開く →
-            </Link>
-          </div>
-        )}
       </main>
     </div>
   );
