@@ -4,12 +4,13 @@ export interface SendMailOptions {
   to: string;
   subject: string;
   text: string;
+  html?: string;
   filename: string;
   bytes: Buffer;
 }
 
 export async function sendMailWithAttachment(options: SendMailOptions) {
-  const { to, subject, text, filename, bytes } = options;
+  const { to, subject, text, html, filename, bytes } = options;
 
   console.log("========================================");
   console.log("📧 [Gmail SMTP] メール送信開始");
@@ -42,6 +43,7 @@ export async function sendMailWithAttachment(options: SendMailOptions) {
       to,
       subject,
       text,
+      html,
       attachments: [
         {
           filename,
