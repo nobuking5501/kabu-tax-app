@@ -418,7 +418,7 @@ export default function Form1Page() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    通貨 *
+                    通貨/Currency *
                   </label>
                   <select
                     value={currency}
@@ -431,7 +431,7 @@ export default function Form1Page() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    銘柄 *
+                    銘柄/Stock Name *
                   </label>
                   <input
                     type="text"
@@ -447,8 +447,11 @@ export default function Form1Page() {
               {/* 対象年度 */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  対象年度（半角数字4桁）*
+                  対象年度/Years *
                 </label>
+                <p className="text-xs text-gray-500 mb-2">
+                  計算結果を自動集計したい年度を半角数字4桁で入力してください。
+                </p>
                 <div className="grid grid-cols-5 gap-2">
                   {years.map((year, i) => (
                     <input
