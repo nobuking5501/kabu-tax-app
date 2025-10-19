@@ -99,6 +99,13 @@ export default function Form1Page() {
       return;
     }
     setRows(rows.filter((_, i) => i !== index));
+
+    // validationErrorsも更新: 削除した行のエラーを除去し、それ以降のインデックスを-1
+    setValidationErrors(
+      validationErrors
+        .filter(i => i !== index) // 削除する行のエラーを除去
+        .map(i => i > index ? i - 1 : i) // それ以降のインデックスを調整
+    );
   };
 
   // 入力変更
@@ -106,6 +113,24 @@ export default function Form1Page() {
     const newRows = [...rows];
     newRows[index] = { ...newRows[index], [field]: value };
     setRows(newRows);
+
+    // リアルタイムバリデーション: 売却で数量がマイナスでない場合に警告
+    if (field === "activity" || field === "quantity") {
+      const updatedRow = newRows[index];
+      const qty = parseFloat(updatedRow.quantity);
+
+      if (updatedRow.activity === "Sold" && (!isNaN(qty) && qty >= 0)) {
+        // エラーリストに追加
+        if (!validationErrors.includes(index)) {
+          setValidationErrors([...validationErrors, index]);
+        }
+      } else {
+        // エラーリストから削除
+        if (validationErrors.includes(index)) {
+          setValidationErrors(validationErrors.filter(i => i !== index));
+        }
+      }
+    }
   };
 
   // 年度変更
@@ -283,12 +308,14 @@ export default function Form1Page() {
       }
     }
     setErrorMessage("");
+    setValidationErrors([]);
     setStep(step + 1);
   };
 
   // ステップ戻る
   const prevStep = () => {
     setErrorMessage("");
+    setValidationErrors([]);
     setStep(step - 1);
   };
 
@@ -490,62 +517,94 @@ export default function Form1Page() {
 
               {/* 取引一覧 */}
               <div className="space-y-3">
-                {rows.map((row, index) => (
-                  <div
-                    key={index}
-                    className="grid grid-cols-6 gap-2 p-4 bg-gray-50 rounded-lg border border-gray-200"
-                  >
-                    <input
-                      type="date"
-                      required
-                      value={row.date}
-                      onChange={(e) => updateRow(index, "date", e.target.value)}
-                      className="col-span-2 px-3 py-2 border border-gray-300 rounded-md text-sm"
-                    />
-                    <select
-                      value={row.activity}
-                      onChange={(e) =>
-                        updateRow(index, "activity", e.target.value as "Purchased" | "Sold")
-                      }
-                      className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                    >
-                      <option value="Purchased">購入</option>
-                      <option value="Sold">売却</option>
-                    </select>
-                    <input
-                      type="text"
-                      required
-                      value={row.quantity}
-                      onChange={(e) => updateRow(index, "quantity", e.target.value)}
-                      placeholder="数量"
-                      className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                    />
-                    <input
-                      type="text"
-                      required
-                      value={row.fmv}
-                      onChange={(e) => updateRow(index, "fmv", e.target.value)}
-                      placeholder="価格"
-                      className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                    />
-                    <div className="flex gap-1">
-                      <input
-                        type="text"
-                        value={row.commission}
-                        onChange={(e) => updateRow(index, "commission", e.target.value)}
-                        placeholder="手数料"
-                        className="flex-1 px-2 py-2 border border-gray-300 rounded-md text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeRow(index)}
-                        className="px-2 bg-red-500 hover:bg-red-600 text-white rounded-md"
+                {rows.map((row, index) => {
+                  const hasError = validationErrors.includes(index);
+                  return (
+                    <div key={index}>
+                      <div
+                        className={`grid grid-cols-6 gap-2 p-4 rounded-lg border ${
+                          hasError
+                            ? "bg-red-50 border-red-300"
+                            : "bg-gray-50 border-gray-200"
+                        }`}
                       >
-                        ×
-                      </button>
+                        <input
+                          type="date"
+                          required
+                          value={row.date}
+                          onChange={(e) => updateRow(index, "date", e.target.value)}
+                          className="col-span-2 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        />
+                        <select
+                          value={row.activity}
+                          onChange={(e) =>
+                            updateRow(index, "activity", e.target.value as "Purchased" | "Sold")
+                          }
+                          className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        >
+                          <option value="Purchased">購入</option>
+                          <option value="Sold">売却</option>
+                        </select>
+                        <input
+                          type="text"
+                          required
+                          value={row.quantity}
+                          onChange={(e) => updateRow(index, "quantity", e.target.value)}
+                          placeholder="数量"
+                          className={`px-3 py-2 border rounded-md text-sm ${
+                            hasError
+                              ? "border-red-500 bg-white"
+                              : "border-gray-300"
+                          }`}
+                        />
+                        <input
+                          type="text"
+                          required
+                          value={row.fmv}
+                          onChange={(e) => updateRow(index, "fmv", e.target.value)}
+                          placeholder="価格"
+                          className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        />
+                        <div className="flex gap-1">
+                          <input
+                            type="text"
+                            value={row.commission}
+                            onChange={(e) => updateRow(index, "commission", e.target.value)}
+                            placeholder="手数料"
+                            className="flex-1 px-2 py-2 border border-gray-300 rounded-md text-sm"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeRow(index)}
+                            className="px-2 bg-red-500 hover:bg-red-600 text-white rounded-md"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                      {hasError && (
+                        <div className="mt-1 px-4 py-2 bg-red-100 border border-red-300 rounded text-xs text-red-700 flex items-start gap-2">
+                          <svg
+                            className="w-4 h-4 flex-shrink-0 mt-0.5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                            />
+                          </svg>
+                          <span>
+                            <strong>警告:</strong> 売却の場合、数量はマイナスの値で入力してください（例: -100）
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <button
