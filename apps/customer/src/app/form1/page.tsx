@@ -525,67 +525,72 @@ export default function Form1Page() {
               </div>
 
               {/* 取引一覧 */}
-              <div className="space-y-3">
+              <div className="space-y-3 overflow-x-auto">
                 {rows.map((row, index) => {
                   const hasError = validationErrors.includes(index);
                   return (
                     <div key={index}>
                       <div
-                        className={`grid grid-cols-6 gap-2 p-4 rounded-lg border ${
+                        className={`flex flex-col sm:grid sm:grid-cols-12 gap-2 p-3 sm:p-4 rounded-lg border ${
                           hasError
                             ? "bg-red-50 border-red-300"
                             : "bg-gray-50 border-gray-200"
                         }`}
                       >
+                        {/* 日付 */}
                         <input
                           type="date"
                           required
                           value={row.date}
                           onChange={(e) => updateRow(index, "date", e.target.value)}
-                          className="col-span-2 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                          className="sm:col-span-3 px-2 py-2 border border-gray-300 rounded-md text-sm w-full"
                         />
+                        {/* 購入/売却 */}
                         <select
                           value={row.activity}
                           onChange={(e) =>
                             updateRow(index, "activity", e.target.value as "Purchased" | "Sold")
                           }
-                          className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                          className="sm:col-span-2 px-2 py-2 border border-gray-300 rounded-md text-sm w-full"
                         >
                           <option value="Purchased">購入</option>
                           <option value="Sold">売却</option>
                         </select>
+                        {/* 数量 */}
                         <input
                           type="text"
                           required
                           value={row.quantity}
                           onChange={(e) => updateRow(index, "quantity", e.target.value)}
                           placeholder="数量"
-                          className={`px-3 py-2 border rounded-md text-sm ${
+                          className={`sm:col-span-2 px-2 py-2 border rounded-md text-sm w-full ${
                             hasError
                               ? "border-red-500 bg-white"
                               : "border-gray-300"
                           }`}
                         />
+                        {/* 価格 */}
                         <input
                           type="text"
                           required
                           value={row.fmv}
                           onChange={(e) => updateRow(index, "fmv", e.target.value)}
                           placeholder="価格"
-                          className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                          className="sm:col-span-2 px-2 py-2 border border-gray-300 rounded-md text-sm w-full"
                         />
-                        <div className="flex gap-1">
+                        {/* 手数料 + 削除ボタン */}
+                        <div className="sm:col-span-3 flex gap-2 w-full">
                           <input
                             type="text"
                             value={row.commission}
                             onChange={(e) => updateRow(index, "commission", e.target.value)}
                             placeholder="手数料"
-                            className="flex-1 px-2 py-2 border border-gray-300 rounded-md text-sm"
+                            className="flex-1 px-2 py-2 border border-gray-300 rounded-md text-sm min-w-0"
                           />
                           <button
                             type="button"
                             onClick={() => removeRow(index)}
-                            className="px-2 bg-red-500 hover:bg-red-600 text-white rounded-md"
+                            className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md text-sm flex-shrink-0"
                           >
                             ×
                           </button>
