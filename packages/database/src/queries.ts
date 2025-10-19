@@ -180,7 +180,6 @@ export async function getAllCustomers(): Promise<Customer[]> {
   // Firestoreから提出履歴を取得してマージ
   const snapshot = await db
     .collection("submissions")
-    .orderBy("created_at", "desc")
     .get();
 
   snapshot.docs.forEach((doc) => {
