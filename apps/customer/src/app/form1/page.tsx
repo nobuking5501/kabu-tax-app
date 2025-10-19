@@ -524,6 +524,30 @@ export default function Form1Page() {
                 💡 売却（Sold）の場合は、数量を<strong>マイナス</strong>で入力してください
               </div>
 
+              {/* 項目説明ヘッダー（デスクトップのみ表示） */}
+              <div className="hidden sm:grid sm:grid-cols-12 gap-2 px-4 pb-3 border-b border-gray-200">
+                <div className="sm:col-span-3">
+                  <p className="text-sm font-medium text-gray-600 mb-1">取引日 / Transaction Date</p>
+                  <p className="text-xs text-gray-400 leading-relaxed">証券会社のレポート上の取引を入力してください。</p>
+                </div>
+                <div className="sm:col-span-2">
+                  <p className="text-sm font-medium text-gray-600 mb-1">取得or売却/Activity</p>
+                  <p className="text-xs text-gray-400 leading-relaxed">株式の取得(Purchased)または売却(Sold)を選択してください。</p>
+                </div>
+                <div className="sm:col-span-2">
+                  <p className="text-sm font-medium text-gray-600 mb-1">株式数/Quantity</p>
+                  <p className="text-xs text-gray-400 leading-relaxed">取得または売却した株式の数量を入力。売却(Sold)の場合はマイナス入力。</p>
+                </div>
+                <div className="sm:col-span-2">
+                  <p className="text-sm font-medium text-gray-600 mb-1">株価or売却価額/FMV</p>
+                  <p className="text-xs text-gray-400 leading-relaxed">取得時の株価または売却時の売却価額を入力してください。</p>
+                </div>
+                <div className="sm:col-span-3">
+                  <p className="text-sm font-medium text-gray-600 mb-1">手数料/Commission</p>
+                  <p className="text-xs text-gray-400 leading-relaxed">売却時に手数料が発生している場合には、手数料の額を入力してください。</p>
+                </div>
+              </div>
+
               {/* 取引一覧 */}
               <div className="space-y-3 overflow-x-auto">
                 {rows.map((row, index) => {
@@ -553,8 +577,8 @@ export default function Form1Page() {
                           }
                           className="sm:col-span-2 px-2 py-2 border border-gray-300 rounded-md text-sm w-full"
                         >
-                          <option value="Purchased">購入</option>
-                          <option value="Sold">売却</option>
+                          <option value="Purchased">取得/Purchased</option>
+                          <option value="Sold">売却/Sold</option>
                         </select>
                         {/* 数量 */}
                         <input
