@@ -102,13 +102,13 @@ export default function LoginPage() {
           <div className="flex justify-center mb-4">
             <Image
               src="/logo-200.png"
-              alt="株式譲渡益計算アプリケーション ロゴ"
+              alt="株式譲渡益自動計算ツール ロゴ"
               width={200}
               height={200}
               priority
             />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">株式譲渡益計算アプリケーション</h1>
+          <h1 className="text-3xl font-bold text-gray-900">株式譲渡益自動計算ツール</h1>
         </div>
 
         {/* ログインカード */}

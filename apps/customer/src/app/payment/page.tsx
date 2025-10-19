@@ -51,7 +51,7 @@ export default function PaymentPage() {
         {/* ヘッダー */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">お支払い</h1>
-          <p className="text-gray-600">株式譲渡益計算アプリケーション</p>
+          <p className="text-gray-600">株式譲渡益自動計算ツール</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">

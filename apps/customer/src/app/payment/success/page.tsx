@@ -78,7 +78,7 @@ function PaymentSuccessContent() {
             決済が完了しました
           </h1>
           <p className="text-gray-600 mb-8">
-            株式譲渡益計算アプリケーションへようこそ
+            株式譲渡益自動計算ツールへようこそ
           </p>
 
           {/* セッションID（デバッグ用） */}
