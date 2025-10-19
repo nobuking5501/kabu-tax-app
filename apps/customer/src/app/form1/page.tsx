@@ -307,6 +307,15 @@ export default function Form1Page() {
         return;
       }
     }
+
+    if (step === 2) {
+      // ステップ2のバリデーション: 売却のマイナスチェック
+      if (validationErrors.length > 0) {
+        setErrorMessage("売却取引の数量をマイナスで入力してください。警告を解消してから次に進んでください。");
+        return;
+      }
+    }
+
     setErrorMessage("");
     setValidationErrors([]);
     setStep(step + 1);
@@ -634,7 +643,12 @@ export default function Form1Page() {
                 <button
                   type="button"
                   onClick={nextStep}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-lg font-semibold shadow-lg transition-colors"
+                  disabled={validationErrors.length > 0}
+                  className={`flex-1 py-4 rounded-lg font-semibold shadow-lg transition-colors ${
+                    validationErrors.length > 0
+                      ? "bg-gray-400 cursor-not-allowed text-gray-200"
+                      : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                  }`}
                 >
                   次へ →
                 </button>
