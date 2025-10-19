@@ -167,12 +167,8 @@ export default function Form1Page() {
 
     // 取得回数に応じた警告表示
     const remaining = available - currentCount;
-    if (remaining === 3) {
-      alert("今回の決済で3回取得できます。残り2回です。");
-    } else if (remaining === 2) {
-      alert("残り1回取得できます。");
-    } else if (remaining === 1) {
-      alert("これが最後の取得です。次回は再度決済が必要です。");
+    if (remaining > 0) {
+      alert(`株式譲渡益自動計算ツール\n\n最大3回取得可能／「OK」を押して進むと1回分消費し、残り「${remaining - 1}回」となります。`);
     }
 
     // バリデーション
