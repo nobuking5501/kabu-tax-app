@@ -268,41 +268,63 @@ export async function getCustomersWithSubmissions(): Promise<Customer[]> {
 
 // 顧客削除
 export async function deleteCustomer(email: string, uid?: string): Promise<void> {
+  console.log("=== deleteCustomer関数開始 ===");
+  console.log("Email:", email, "UID:", uid);
+
   const auth = getAuthClient();
   const db = getFirestoreClient();
 
   // Firebase Authenticationからユーザーを削除
   if (uid) {
     try {
+      console.log("Firebase Authenticationからユーザーを削除中...", uid);
       await auth.deleteUser(uid);
+      console.log("✅ Firebase Authユーザー削除成功");
     } catch (error: any) {
+      console.error("Firebase Authユーザー削除エラー:", error);
       // ユーザーが既に削除されている場合はエラーを無視
       if (error.code !== "auth/user-not-found") {
+        console.error("致命的なエラー、処理を中断します");
         throw error;
       }
+      console.log("ユーザーが既に削除されているため、スキップします");
     }
+  } else {
+    console.log("⚠️ UIDが指定されていないため、Firebase Authからの削除をスキップします");
   }
 
   // Firestoreのusersコレクションから削除
   if (uid) {
     try {
+      console.log("Firestoreのusersコレクションからユーザーを削除中...", uid);
       await db.collection("users").doc(uid).delete();
+      console.log("✅ usersコレクション削除成功");
     } catch (error) {
-      console.error("users削除エラー:", error);
+      console.error("usersコレクション削除エラー:", error);
+      // 続行可能なエラー
     }
   }
 
   // Firestoreのsubmissionsコレクションから該当するメールアドレスのドキュメントを削除
+  console.log("submissionsコレクションを検索中...", email);
   const submissionsSnapshot = await db
     .collection("submissions")
     .where("email", "==", email)
     .get();
 
+  console.log(`見つかったsubmissions: ${submissionsSnapshot.size}件`);
+
   const batch = db.batch();
+  let totalTransactions = 0;
 
   for (const doc of submissionsSnapshot.docs) {
+    console.log(`submission削除中: ${doc.id}`);
+
     // サブコレクションのtransactionsも削除
     const transactionsSnapshot = await doc.ref.collection("transactions").get();
+    console.log(`  - transactions: ${transactionsSnapshot.size}件`);
+    totalTransactions += transactionsSnapshot.size;
+
     transactionsSnapshot.docs.forEach((transactionDoc) => {
       batch.delete(transactionDoc.ref);
     });
@@ -311,7 +333,10 @@ export async function deleteCustomer(email: string, uid?: string): Promise<void>
     batch.delete(doc.ref);
   }
 
+  console.log(`バッチコミット実行中 (submissions: ${submissionsSnapshot.size}件, transactions: ${totalTransactions}件)`);
   await batch.commit();
+  console.log("✅ バッチコミット成功");
+  console.log("=== deleteCustomer関数完了 ===");
 }
 
 // 統計
