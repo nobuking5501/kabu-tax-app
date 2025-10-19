@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
     .content { margin-bottom: 30px; }
     .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; color: #666; font-size: 12px; }
     .logo { width: 40px; height: 40px; margin-bottom: 10px; }
-    .button { display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+    .button { display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white !important; text-decoration: none; border-radius: 6px; margin: 20px 0; font-size: 14px; font-weight: 600; }
     p { margin: 10px 0; }
     .environmental-note { color: #888; font-size: 11px; font-style: italic; }
   </style>
@@ -210,11 +210,9 @@ export async function POST(request: NextRequest) {
     <div class="content">
       <p>榧野国際税務会計事務所です。</p>
 
-      <p>このたびは、"株式譲渡所得自動計算ツール"をご利用いただきありがとうございました。<br>
-      ご入力内容に基づく計算結果を添付のとおりお送りさせていただきます。</p>
+      <p>このたびは、"株式譲渡所得自動計算ツール"をご利用いただきありがとうございました。ご入力内容に基づく計算結果を添付のとおりお送りさせていただきます。</p>
 
-      <p>計算結果はそのまま確定申告等にご利用いただくことができますが、<br>
-      内容のご説明や確定申告の方法等について、有償サポートをご希望される場合には下記よりお申込みください。</p>
+      <p>計算結果はそのまま確定申告等にご利用いただくことができますが、内容のご説明や確定申告の方法等について、有償サポートをご希望される場合には下記よりお申込みください。</p>
 
       <p style="text-align: center;">
         <a href="https://calendar.app.google/vDJjeXbFnjQtrjrZ9" class="button">【個別税務相談】</a>
@@ -303,7 +301,7 @@ Thank you for considering the environmental impact of printing this email.`;
     .content { margin-bottom: 30px; }
     .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; color: #666; font-size: 12px; }
     .logo { width: 40px; height: 40px; margin-bottom: 10px; }
-    .button { display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+    .button { display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white !important; text-decoration: none; border-radius: 6px; margin: 20px 0; font-size: 14px; font-weight: 600; }
     p { margin: 10px 0; }
     .environmental-note { color: #888; font-size: 11px; font-style: italic; }
   </style>
@@ -316,11 +314,9 @@ Thank you for considering the environmental impact of printing this email.`;
     <div class="content">
       <p>榧野国際税務会計事務所です。</p>
 
-      <p>このたびは、"株式譲渡所得自動計算ツール"をご利用いただきありがとうございました。<br>
-      ご入力内容に基づく計算結果を添付のとおりお送りさせていただきます。</p>
+      <p>このたびは、"株式譲渡所得自動計算ツール"をご利用いただきありがとうございました。ご入力内容に基づく計算結果を添付のとおりお送りさせていただきます。</p>
 
-      <p>計算結果はそのまま確定申告等にご利用いただくことができますが、<br>
-      内容のご説明や確定申告の方法等について、有償サポートをご希望される場合には下記よりお申込みください。</p>
+      <p>計算結果はそのまま確定申告等にご利用いただくことができますが、内容のご説明や確定申告の方法等について、有償サポートをご希望される場合には下記よりお申込みください。</p>
 
       <p style="text-align: center;">
         <a href="https://calendar.app.google/vDJjeXbFnjQtrjrZ9" class="button">【個別税務相談】</a>
