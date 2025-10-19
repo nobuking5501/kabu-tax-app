@@ -719,13 +719,44 @@ export default function Form1Page() {
                 </div>
 
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-gray-700 mb-2">取引データ</h3>
-                  <p className="text-sm text-gray-600">
-                    取引数: <strong>{rows.length}件</strong>
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    保有株式数: <strong>{holdings.toLocaleString()}</strong>
-                  </p>
+                  <h3 className="font-semibold text-gray-700 mb-3">取引データ</h3>
+
+                  {/* 取引詳細リスト */}
+                  <div className="mb-4 space-y-2 max-h-80 overflow-y-auto">
+                    {rows.map((row, index) => (
+                      <div key={index} className="bg-white rounded-md p-3 text-sm border border-gray-200">
+                        <div className="flex items-start gap-2">
+                          <span className="font-medium text-gray-700 min-w-[20px]">{index + 1}.</span>
+                          <div className="flex-1 space-y-1">
+                            <p className="text-gray-800">
+                              <span className="font-medium">{row.date}</span>
+                              {" - "}
+                              <span className={`font-medium ${row.activity === "Sold" ? "text-red-600" : "text-blue-600"}`}>
+                                {row.activity === "Purchased" ? "取得" : "売却"}
+                              </span>
+                            </p>
+                            <p className="text-gray-600 text-xs">
+                              数量: <strong>{row.quantity}</strong> |
+                              価格: <strong>{row.fmv}</strong>
+                              {row.commission && (
+                                <> | 手数料: <strong>{row.commission}</strong></>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* サマリー */}
+                  <div className="pt-3 border-t border-gray-300">
+                    <p className="text-sm text-gray-600">
+                      取引数: <strong>{rows.length}件</strong>
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      保有株式数: <strong>{holdings.toLocaleString()}</strong>
+                    </p>
+                  </div>
                 </div>
               </div>
 
