@@ -761,7 +761,7 @@ export default function Form1Page() {
               </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
-                📄 送信ボタンを押すと、メール設定がある場合はPDF付きメールが送信され、ない場合はPDFがダウンロードされます。
+                📄 送信ボタンを押すと、入力されたメールアドレス宛に計算結果をPDF付きメールで送信します。メールボックスをご確認ください。
               </div>
 
               <div className="flex gap-4">
