@@ -404,9 +404,6 @@ export default function Form1Page() {
                 <p className="text-xs text-gray-500 mb-2">
                   計算結果のPDFを以下のメールアドレスに送信します。
                 </p>
-                <p className="text-xs text-blue-600 mb-3">
-                  💡 メール設定がある場合はメール送信、ない場合はPDFダウンロードになります。
-                </p>
                 <input
                   type="email"
                   required
