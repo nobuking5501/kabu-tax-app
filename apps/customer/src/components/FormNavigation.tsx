@@ -21,12 +21,12 @@ export default function FormNavigation() {
           <div className="flex items-center gap-3">
             <Image
               src="/logo-40.png"
-              alt="株式譲渡益計算アプリ"
+              alt="株式譲渡益自動計算ツール"
               width={40}
               height={40}
             />
             <div>
-              <h1 className="text-lg font-bold text-gray-900">株式譲渡益計算アプリ</h1>
+              <h1 className="text-lg font-bold text-gray-900">株式譲渡益自動計算ツール</h1>
             </div>
           </div>
 
