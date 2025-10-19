@@ -400,7 +400,7 @@ export default function Form2Page() {
                 確定申告のご相談は専門家へ
               </h3>
               <p className="text-gray-600 mb-4">
-                外国株式の税務処理は複雑です。〇〇国際税務会計事務所が丁寧にサポートいたします。
+                外国株式の税務処理は複雑です。榧野国際税務会計事務所が丁寧にサポートいたします。
               </p>
               <button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg transition-all transform hover:scale-105">
                 無料相談を予約する →

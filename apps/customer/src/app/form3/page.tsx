@@ -210,7 +210,7 @@ export default function Form3Page() {
               <div className="text-4xl mb-3">🎓</div>
               <h3 className="font-bold text-lg mb-2">専門家に相談</h3>
               <p className="text-sm opacity-90 mb-4">
-                確定申告は〇〇国際税務会計事務所にお任せください
+                確定申告は榧野国際税務会計事務所にお任せください
               </p>
               <button className="w-full bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
                 無料相談予約 →

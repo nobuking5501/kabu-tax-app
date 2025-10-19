@@ -363,7 +363,7 @@ export default function GuidePage() {
                 確定申告のご相談は専門家へ
               </h2>
               <p className="text-white/90 mb-6">
-                複雑な外国株式の税務処理は、〇〇国際税務会計事務所にお任せください。<br />
+                複雑な外国株式の税務処理は、榧野国際税務会計事務所にお任せください。<br />
                 このアプリで生成したPDFをお持ちいただければ、スムーズに対応いたします。
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
