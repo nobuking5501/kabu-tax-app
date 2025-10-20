@@ -180,10 +180,9 @@ export async function POST(request: NextRequest) {
         console.log("📧 Resend でメール送信中...", body.email);
 
         // ベースURL取得（環境変数またはリクエストから）
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL
-          ? `https://${process.env.VERCEL_URL}`
-          : "https://kabu-tax-app.vercel.app";
-        const logoUrl = `${baseUrl}/logo-40.png`;
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+          || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://kabu-tax-app.vercel.app");
+        const logoUrl = `${baseUrl}/logo-200.png`;
 
         const htmlContent = `
 <!DOCTYPE html>
@@ -196,7 +195,7 @@ export async function POST(request: NextRequest) {
     .header { text-align: center; margin-bottom: 30px; }
     .content { margin-bottom: 30px; }
     .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; color: #666; font-size: 12px; }
-    .logo { width: 40px; height: 40px; margin-bottom: 10px; }
+    .logo { width: 80px; height: 80px; margin-bottom: 10px; }
     .button { display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white !important; text-decoration: none; border-radius: 6px; margin: 20px 0; font-size: 14px; font-weight: 600; }
     p { margin: 10px 0; }
     .environmental-note { color: #888; font-size: 11px; font-style: italic; }
@@ -284,10 +283,9 @@ Thank you for considering the environmental impact of printing this email.`;
         console.log("📧 Gmail SMTP でメール送信中...", body.email);
 
         // ベースURL取得（環境変数またはリクエストから）
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL
-          ? `https://${process.env.VERCEL_URL}`
-          : "https://kabu-tax-app.vercel.app";
-        const logoUrl = `${baseUrl}/logo-40.png`;
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+          || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://kabu-tax-app.vercel.app");
+        const logoUrl = `${baseUrl}/logo-200.png`;
 
         const htmlContent = `
 <!DOCTYPE html>
@@ -300,7 +298,7 @@ Thank you for considering the environmental impact of printing this email.`;
     .header { text-align: center; margin-bottom: 30px; }
     .content { margin-bottom: 30px; }
     .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; color: #666; font-size: 12px; }
-    .logo { width: 40px; height: 40px; margin-bottom: 10px; }
+    .logo { width: 80px; height: 80px; margin-bottom: 10px; }
     .button { display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white !important; text-decoration: none; border-radius: 6px; margin: 20px 0; font-size: 14px; font-weight: 600; }
     p { margin: 10px 0; }
     .environmental-note { color: #888; font-size: 11px; font-style: italic; }
