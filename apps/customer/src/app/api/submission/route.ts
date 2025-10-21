@@ -179,10 +179,6 @@ export async function POST(request: NextRequest) {
       try {
         console.log("📧 Resend でメール送信中...", body.email);
 
-        // ベースURL取得（環境変数またはリクエストから）
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
-          || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://kabu-tax-app.vercel.app");
-        const logoUrl = `${baseUrl}/logo-200.png`;
 
         const htmlContent = `
 <!DOCTYPE html>
@@ -190,28 +186,24 @@ export async function POST(request: NextRequest) {
 <head>
   <meta charset="UTF-8">
   <style>
-    body { font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.8; color: #333; }
     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { text-align: center; margin-bottom: 30px; }
     .content { margin-bottom: 30px; }
     .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; color: #666; font-size: 12px; }
     .logo { width: 80px; height: 80px; margin-bottom: 10px; }
     .button { display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white !important; text-decoration: none; border-radius: 6px; margin: 20px 0; font-size: 14px; font-weight: 600; }
-    p { margin: 10px 0; }
+    p { margin: 15px 0; }
     .environmental-note { color: #888; font-size: 11px; font-style: italic; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <img src="${logoUrl}" alt="榧野国際税務会計事務所" class="logo">
-    </div>
     <div class="content">
       <p>榧野国際税務会計事務所です。</p>
 
-      <p>このたびは、"株式譲渡所得自動計算ツール"をご利用いただきありがとうございました。ご入力内容に基づく計算結果を添付のとおりお送りさせていただきます。</p>
+      <p>このたびは、"株式譲渡所得自動計算ツール"をご利用いただきありがとうございました。<br>ご入力内容に基づく計算結果を添付のとおりお送りさせていただきます。</p>
 
-      <p>計算結果はそのまま確定申告等にご利用いただくことができますが、内容のご説明や確定申告の方法等について、有償サポートをご希望される場合には下記よりお申込みください。</p>
+      <p>計算結果はそのまま確定申告等にご利用いただくことができますが、<br>内容のご説明や確定申告の方法等について、有償サポートをご希望される場合には下記よりお申込みください。</p>
 
       <p style="text-align: center;">
         <a href="https://calendar.app.google/vDJjeXbFnjQtrjrZ9" class="button">【個別税務相談】</a>
@@ -220,7 +212,6 @@ export async function POST(request: NextRequest) {
       <p>どうぞよろしくお願いいたします。</p>
     </div>
     <div class="footer">
-      <img src="${logoUrl}" alt="榧野国際税務会計事務所" class="logo">
       <p><strong>榧野国際税務会計事務所</strong></p>
       <p>Website: <a href="http://www.kyno-office.com" style="color: #4F46E5; text-decoration: none;">http://www.kyno-office.com</a></p>
       <p class="environmental-note">Thank you for considering the environmental impact of printing this email.</p>
@@ -282,10 +273,6 @@ Thank you for considering the environmental impact of printing this email.`;
       try {
         console.log("📧 Gmail SMTP でメール送信中...", body.email);
 
-        // ベースURL取得（環境変数またはリクエストから）
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
-          || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://kabu-tax-app.vercel.app");
-        const logoUrl = `${baseUrl}/logo-200.png`;
 
         const htmlContent = `
 <!DOCTYPE html>
@@ -293,28 +280,24 @@ Thank you for considering the environmental impact of printing this email.`;
 <head>
   <meta charset="UTF-8">
   <style>
-    body { font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.8; color: #333; }
     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { text-align: center; margin-bottom: 30px; }
     .content { margin-bottom: 30px; }
     .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; color: #666; font-size: 12px; }
     .logo { width: 80px; height: 80px; margin-bottom: 10px; }
     .button { display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: white !important; text-decoration: none; border-radius: 6px; margin: 20px 0; font-size: 14px; font-weight: 600; }
-    p { margin: 10px 0; }
+    p { margin: 15px 0; }
     .environmental-note { color: #888; font-size: 11px; font-style: italic; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <img src="${logoUrl}" alt="榧野国際税務会計事務所" class="logo">
-    </div>
     <div class="content">
       <p>榧野国際税務会計事務所です。</p>
 
-      <p>このたびは、"株式譲渡所得自動計算ツール"をご利用いただきありがとうございました。ご入力内容に基づく計算結果を添付のとおりお送りさせていただきます。</p>
+      <p>このたびは、"株式譲渡所得自動計算ツール"をご利用いただきありがとうございました。<br>ご入力内容に基づく計算結果を添付のとおりお送りさせていただきます。</p>
 
-      <p>計算結果はそのまま確定申告等にご利用いただくことができますが、内容のご説明や確定申告の方法等について、有償サポートをご希望される場合には下記よりお申込みください。</p>
+      <p>計算結果はそのまま確定申告等にご利用いただくことができますが、<br>内容のご説明や確定申告の方法等について、有償サポートをご希望される場合には下記よりお申込みください。</p>
 
       <p style="text-align: center;">
         <a href="https://calendar.app.google/vDJjeXbFnjQtrjrZ9" class="button">【個別税務相談】</a>
@@ -323,7 +306,6 @@ Thank you for considering the environmental impact of printing this email.`;
       <p>どうぞよろしくお願いいたします。</p>
     </div>
     <div class="footer">
-      <img src="${logoUrl}" alt="榧野国際税務会計事務所" class="logo">
       <p><strong>榧野国際税務会計事務所</strong></p>
       <p>Website: <a href="http://www.kyno-office.com" style="color: #4F46E5; text-decoration: none;">http://www.kyno-office.com</a></p>
       <p class="environmental-note">Thank you for considering the environmental impact of printing this email.</p>

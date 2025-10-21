@@ -1,4 +1,4 @@
-import type { SubmissionInput, CalcResult, Transaction, YearSummary } from "./types";
+import type { SubmissionInput, CalcResult, Transaction, YearSummary, TransactionDetail } from "./types";
 import { loadFxTable, pickRateOnOrBefore } from "./fx";
 import { roundDown0, roundUp0 } from "./round";
 
@@ -36,6 +36,7 @@ export async function calcMovingAverage(input: SubmissionInput): Promise<CalcRes
   }
 
   const holdingLots: Array<{ date: string; qty: number }> = [];
+  const transactionDetails: TransactionDetail[] = []; // 全取引の詳細データを記録
 
   for (const tx of sorted) {
     const rate = pickRateOnOrBefore(fxTable, tx.date);
@@ -44,22 +45,47 @@ export async function calcMovingAverage(input: SubmissionInput): Promise<CalcRes
     if (tx.activity === "Purchased") {
       // 購入: 取得手数料は原価に含める（TTS換算）
       const commission = tx.commission ?? 0;
-      const acqJPY = roundDown0((tx.quantity * tx.price + commission) * rate.tts);
+      const grossAmount = tx.quantity * tx.price;
+      const netAmount = grossAmount + commission;
+      const acqJPY = roundDown0(netAmount * rate.tts);
+      const commissionJPY = roundDown0(commission * rate.tts);
 
       holdings += tx.quantity;
       costBasisJPY += acqJPY;
       unitCostJPY = holdings > 0 ? roundUp0(costBasisJPY / holdings) : 0;
 
       holdingLots.push({ date: tx.date, qty: tx.quantity });
+
+      // 取引詳細を記録
+      transactionDetails.push({
+        date: tx.date,
+        activity: tx.activity,
+        quantity: tx.quantity,
+        fmv: tx.price,
+        grossAmount: grossAmount,
+        commission: commission,
+        netAmount: netAmount,
+        tts: rate.tts,
+        ttb: rate.ttb,
+        grossProceedsJPY: acqJPY,
+        acquisitionCostJPY: acqJPY,
+        commissionJPY: commissionJPY,
+        realizedGainJPY: 0, // 購入時は実現損益なし
+        holdings: holdings,
+        costBasis: costBasisJPY,
+        costBasisPerHolding: unitCostJPY,
+      });
     } else {
       // 売却: 数量を正規化
       let qty = Math.abs(tx.quantity);
 
       // 売却代金（TTB換算）
-      const grossJPY = roundDown0(qty * tx.price * rate.ttb);
+      const commission = tx.commission ?? 0;
+      const grossAmount = qty * tx.price;
+      const netAmount = grossAmount - commission;
+      const grossJPY = roundDown0(grossAmount * rate.ttb);
 
       // 売却手数料（TTS換算）
-      const commission = tx.commission ?? 0;
       const commissionJPY = roundDown0(commission * rate.tts);
 
       // 実現損益
@@ -84,6 +110,26 @@ export async function calcMovingAverage(input: SubmissionInput): Promise<CalcRes
         summary.proceedsJPY += grossJPY;
         summary.realizedGainJPY += realized;
       }
+
+      // 取引詳細を記録
+      transactionDetails.push({
+        date: tx.date,
+        activity: tx.activity,
+        quantity: -qty, // 売却は負の数で表示
+        fmv: tx.price,
+        grossAmount: grossAmount,
+        commission: commission,
+        netAmount: netAmount,
+        tts: rate.tts,
+        ttb: rate.ttb,
+        grossProceedsJPY: grossJPY,
+        acquisitionCostJPY: acquisitionCostForSold,
+        commissionJPY: commissionJPY,
+        realizedGainJPY: realized,
+        holdings: holdings,
+        costBasis: costBasisJPY,
+        costBasisPerHolding: unitCostJPY,
+      });
 
       // 保有ロットから消化（FIFO的に先頭から減らす）
       let remaining = qty;
@@ -122,5 +168,6 @@ export async function calcMovingAverage(input: SubmissionInput): Promise<CalcRes
     years: input.years.sort((a, b) => a - b),
     summaries,
     finalHoldings,
+    transactionDetails, // 全取引の詳細データ
   };
 }

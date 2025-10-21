@@ -74,6 +74,42 @@ const styles = StyleSheet.create({
   colLot1: { width: "33%", paddingHorizontal: 5 },
   colLot2: { width: "33%", paddingHorizontal: 5, textAlign: "right" },
   colLot3: { width: "34%", paddingHorizontal: 5, textAlign: "right" },
+  // 取引詳細テーブル用のスタイル（16列）
+  detailTable: {
+    width: "100%",
+    fontSize: 7, // より小さいフォント
+  },
+  detailHeader: {
+    flexDirection: "row",
+    backgroundColor: "#f5f5f5",
+    paddingVertical: 5,
+    borderBottom: "2 solid #000",
+    fontWeight: "bold",
+    fontSize: 6,
+  },
+  detailRow: {
+    flexDirection: "row",
+    borderBottom: "1 solid #e0e0e0",
+    paddingVertical: 4,
+    fontSize: 7,
+  },
+  // 各列の幅（合計100%）
+  dcol1: { width: "6%", paddingHorizontal: 2 },    // Date
+  dcol2: { width: "5%", paddingHorizontal: 2 },    // Activity
+  dcol3: { width: "5%", paddingHorizontal: 2, textAlign: "right" },  // Qty
+  dcol4: { width: "5%", paddingHorizontal: 2, textAlign: "right" },  // FMV
+  dcol5: { width: "6%", paddingHorizontal: 2, textAlign: "right" },  // Gross Amt
+  dcol6: { width: "5%", paddingHorizontal: 2, textAlign: "right" },  // Comm
+  dcol7: { width: "6%", paddingHorizontal: 2, textAlign: "right" },  // Net Amt
+  dcol8: { width: "5%", paddingHorizontal: 2, textAlign: "right" },  // TTS
+  dcol9: { width: "5%", paddingHorizontal: 2, textAlign: "right" },  // TTB
+  dcol10: { width: "7%", paddingHorizontal: 2, textAlign: "right" }, // Gross JPY
+  dcol11: { width: "7%", paddingHorizontal: 2, textAlign: "right" }, // Acq Cost JPY
+  dcol12: { width: "6%", paddingHorizontal: 2, textAlign: "right" }, // Comm JPY
+  dcol13: { width: "7%", paddingHorizontal: 2, textAlign: "right" }, // Realized JPY
+  dcol14: { width: "6%", paddingHorizontal: 2, textAlign: "right" }, // Holdings
+  dcol15: { width: "7%", paddingHorizontal: 2, textAlign: "right" }, // Cost Basis
+  dcol16: { width: "7%", paddingHorizontal: 2, textAlign: "right" }, // Cost/Unit
   footer: {
     position: "absolute",
     bottom: 30,
@@ -122,6 +158,51 @@ export const ReportPDF: React.FC<ReportPDFProps> = ({ result, email }) => {
                 <Text style={styles.col2}>{fmt.format(s.sellQuantity)}</Text>
                 <Text style={styles.col3}>{fmt.format(s.proceedsJPY)}</Text>
                 <Text style={styles.col4}>{fmt.format(s.realizedGainJPY)}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* 取引詳細テーブル */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>全取引詳細</Text>
+          <View style={styles.detailTable}>
+            <View style={styles.detailHeader}>
+              <Text style={styles.dcol1}>日付</Text>
+              <Text style={styles.dcol2}>区分</Text>
+              <Text style={styles.dcol3}>数量</Text>
+              <Text style={styles.dcol4}>単価</Text>
+              <Text style={styles.dcol5}>総額</Text>
+              <Text style={styles.dcol6}>手数料</Text>
+              <Text style={styles.dcol7}>純額</Text>
+              <Text style={styles.dcol8}>TTS</Text>
+              <Text style={styles.dcol9}>TTB</Text>
+              <Text style={styles.dcol10}>総額JPY</Text>
+              <Text style={styles.dcol11}>取得原価</Text>
+              <Text style={styles.dcol12}>手数料JPY</Text>
+              <Text style={styles.dcol13}>実現損益</Text>
+              <Text style={styles.dcol14}>保有数</Text>
+              <Text style={styles.dcol15}>簿価合計</Text>
+              <Text style={styles.dcol16}>単価JPY</Text>
+            </View>
+            {result.transactionDetails.map((tx, i) => (
+              <View key={i} style={styles.detailRow}>
+                <Text style={styles.dcol1}>{tx.date}</Text>
+                <Text style={styles.dcol2}>{tx.activity === "Purchased" ? "買" : "売"}</Text>
+                <Text style={styles.dcol3}>{fmt.format(tx.quantity)}</Text>
+                <Text style={styles.dcol4}>{tx.fmv.toFixed(2)}</Text>
+                <Text style={styles.dcol5}>{tx.grossAmount.toFixed(2)}</Text>
+                <Text style={styles.dcol6}>{tx.commission.toFixed(2)}</Text>
+                <Text style={styles.dcol7}>{tx.netAmount.toFixed(2)}</Text>
+                <Text style={styles.dcol8}>{tx.tts.toFixed(2)}</Text>
+                <Text style={styles.dcol9}>{tx.ttb.toFixed(2)}</Text>
+                <Text style={styles.dcol10}>{fmt.format(tx.grossProceedsJPY)}</Text>
+                <Text style={styles.dcol11}>{fmt.format(tx.acquisitionCostJPY)}</Text>
+                <Text style={styles.dcol12}>{fmt.format(tx.commissionJPY)}</Text>
+                <Text style={styles.dcol13}>{fmt.format(tx.realizedGainJPY)}</Text>
+                <Text style={styles.dcol14}>{fmt.format(tx.holdings)}</Text>
+                <Text style={styles.dcol15}>{fmt.format(tx.costBasis)}</Text>
+                <Text style={styles.dcol16}>{fmt.format(tx.costBasisPerHolding)}</Text>
               </View>
             ))}
           </View>
