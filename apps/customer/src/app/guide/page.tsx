@@ -367,9 +367,14 @@ export default function GuidePage() {
                 このアプリで生成したPDFをお持ちいただければ、スムーズに対応いたします。
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button className="bg-white text-indigo-600 px-8 py-3 rounded-xl font-semibold shadow-lg hover:bg-gray-100 transition-all transform hover:scale-105">
+                <a
+                  href="https://calendar.app.google/vDJjeXbFnjQtrjrZ9"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block text-center bg-white text-indigo-600 px-8 py-3 rounded-xl font-semibold shadow-lg hover:bg-gray-100 transition-all transform hover:scale-105"
+                >
                   無料相談を予約する
-                </button>
+                </a>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Link
                     href="/guide/how-to-use"

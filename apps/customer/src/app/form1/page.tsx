@@ -809,9 +809,14 @@ export default function Form1Page() {
           <p className="text-sm mb-4 opacity-90">
             複雑な外国株式の税務処理は、専門家にお任せください。
           </p>
-          <button className="bg-white text-indigo-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+          <a
+            href="https://calendar.app.google/vDJjeXbFnjQtrjrZ9"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block bg-white text-indigo-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+          >
             榧野国際税務会計事務所に相談する →
-          </button>
+          </a>
         </div>
       </div>
       </div>

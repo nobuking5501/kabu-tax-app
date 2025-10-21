@@ -402,9 +402,14 @@ export default function Form2Page() {
               <p className="text-gray-600 mb-4">
                 外国株式の税務処理は複雑です。榧野国際税務会計事務所が丁寧にサポートいたします。
               </p>
-              <button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg transition-all transform hover:scale-105">
+              <a
+                href="https://calendar.app.google/vDJjeXbFnjQtrjrZ9"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold shadow-lg transition-all transform hover:scale-105"
+              >
                 無料相談を予約する →
-              </button>
+              </a>
             </div>
           </div>
         </div>
