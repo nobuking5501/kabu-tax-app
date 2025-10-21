@@ -168,7 +168,7 @@ export async function getAllCustomers(): Promise<Customer[]> {
       if (customer.uid === uid) {
         // 決済情報をマージ
         if (data.paymentCompleted) {
-          customer.payment_count = 1; // 現在は1回のみ対応
+          customer.payment_count = data.paymentCount || 0;
           customer.payment_completed = data.paymentCompleted;
           customer.last_payment_date = data.paymentDate?.toDate() || undefined;
         }

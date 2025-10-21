@@ -15,6 +15,7 @@ export interface UserPaymentData {
   paymentCompleted: boolean;
   stripeSessionId?: string;
   paymentDate?: Date;
+  paymentCount: number;
   retrievalCount: number;
   availableRetrievals: number;
   lastUpdated?: Date;
@@ -39,6 +40,7 @@ export async function getUserPaymentData(uid: string): Promise<UserPaymentData |
         paymentCompleted: data.paymentCompleted || false,
         stripeSessionId: data.stripeSessionId,
         paymentDate: data.paymentDate?.toDate(),
+        paymentCount: data.paymentCount || 0,
         retrievalCount: data.retrievalCount || 0,
         availableRetrievals: data.availableRetrievals || 0,
         lastUpdated: data.lastUpdated?.toDate(),
@@ -48,6 +50,7 @@ export async function getUserPaymentData(uid: string): Promise<UserPaymentData |
     // ユーザーデータが存在しない場合は初期値を返す
     return {
       paymentCompleted: false,
+      paymentCount: 0,
       retrievalCount: 0,
       availableRetrievals: 0,
     };
@@ -72,10 +75,16 @@ export async function savePaymentData(
 
   try {
     const userRef = doc(db, "users", uid);
+
+    // 既存のpaymentCountを取得
+    const userSnap = await getDoc(userRef);
+    const currentPaymentCount = userSnap.exists() ? (userSnap.data().paymentCount || 0) : 0;
+
     await setDoc(userRef, {
       paymentCompleted: true,
       stripeSessionId: sessionId,
       paymentDate: serverTimestamp(),
+      paymentCount: currentPaymentCount + 1,
       retrievalCount: 0,
       availableRetrievals,
       lastUpdated: serverTimestamp(),
@@ -133,6 +142,7 @@ export async function resetPaymentData(uid: string): Promise<boolean> {
       retrievalCount: 0,
       availableRetrievals: 0,
       lastUpdated: serverTimestamp(),
+      // paymentCountは累積カウントなのでリセットしない
     });
 
     return true;
