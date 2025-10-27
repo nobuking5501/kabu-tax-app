@@ -250,33 +250,6 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
-
-            {/* クイックアクション */}
-            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 border border-indigo-200">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">
-                🚀 クイックアクション
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Link
-                  href="/customers"
-                  className="bg-white hover:bg-gray-50 p-4 rounded-lg border border-gray-200 transition-colors"
-                >
-                  <p className="font-semibold text-gray-900">👥 顧客リスト</p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    全ての顧客を確認・検索
-                  </p>
-                </Link>
-                <button
-                  onClick={fetchStats}
-                  className="bg-white hover:bg-gray-50 p-4 rounded-lg border border-gray-200 transition-colors text-left"
-                >
-                  <p className="font-semibold text-gray-900">🔄 統計を更新</p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    最新の統計情報を取得
-                  </p>
-                </button>
-              </div>
-            </div>
           </div>
         )}
 
