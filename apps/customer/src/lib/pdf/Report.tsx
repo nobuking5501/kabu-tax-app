@@ -25,95 +25,114 @@ if (typeof window === 'undefined') {
 
 const styles = StyleSheet.create({
   page: {
-    padding: 20,
-    fontSize: 8,
+    padding: 15,
+    fontSize: 7,
     fontFamily: "NotoSansJP",
   },
-  // Top info section (Currency, Stock Name)
+  // Top info section (Currency, Stock Name) - smaller and left-aligned
   infoSection: {
-    marginBottom: 15,
+    marginBottom: 10,
+    width: "35%",
   },
   infoRow: {
     flexDirection: "row",
-    marginBottom: 2,
+    marginBottom: 0,
   },
   infoLabel: {
-    width: "15%",
-    padding: 4,
+    width: "40%",
+    padding: 3,
     border: "1 solid #000",
-    backgroundColor: "#f0f0f0",
-    fontWeight: "bold",
-    fontSize: 8,
+    backgroundColor: "#333",
+    color: "#fff",
+    fontSize: 7,
   },
   infoValue: {
-    width: "35%",
-    padding: 4,
+    width: "60%",
+    padding: 3,
     border: "1 solid #000",
-    fontSize: 8,
+    fontSize: 7,
   },
-  // Year summary section
+  // Year summary section - narrower and left-aligned
   section: {
-    marginBottom: 15,
+    marginBottom: 10,
+  },
+  summaryContainer: {
+    width: "35%",
   },
   sectionTitle: {
-    fontSize: 10,
+    fontSize: 8,
     fontWeight: "bold",
-    marginBottom: 5,
-    padding: 4,
-    backgroundColor: "#ffeb3b",
+    marginBottom: 0,
+    padding: 3,
+    backgroundColor: "#333",
+    color: "#fff",
     border: "1 solid #000",
   },
   // Year summary table (3 columns: Year, Capital Gain, Total)
   summaryRow: {
     flexDirection: "row",
   },
+  summaryRowAlt: {
+    flexDirection: "row",
+    backgroundColor: "#FFF9E6",
+  },
   summaryHeader: {
     flexDirection: "row",
     backgroundColor: "#ffeb3b",
   },
   summaryCell: {
-    padding: 4,
+    padding: 3,
     border: "1 solid #000",
     fontSize: 7,
   },
-  summaryCol1: { width: "20%", textAlign: "left" },   // Year
-  summaryCol2: { width: "40%", textAlign: "right" },  // Capital Gain
-  summaryCol3: { width: "40%", textAlign: "right" },  // Total
+  summaryCol1: { width: "33.33%", textAlign: "left" },   // Year
+  summaryCol2: { width: "33.33%", textAlign: "right" },  // Capital Gain
+  summaryCol3: { width: "33.34%", textAlign: "right" },  // Total
   // Transaction detail table (16 columns)
   detailHeader: {
     flexDirection: "row",
-    backgroundColor: "#ffeb3b",
+    backgroundColor: "#333",
+  },
+  detailHeaderCell: {
+    padding: 2,
+    border: "1 solid #000",
+    fontSize: 5.5,
+    color: "#fff",
   },
   detailRow: {
     flexDirection: "row",
   },
+  detailRowAlt: {
+    flexDirection: "row",
+    backgroundColor: "#FFF9E6",
+  },
   detailCell: {
-    padding: 2,
+    padding: 1.5,
     border: "1 solid #000",
     fontSize: 6,
   },
-  // Column widths for 16 columns
-  dcol1: { width: "6%", textAlign: "left" },    // Transaction Date
-  dcol2: { width: "5%", textAlign: "center" },  // Activity
-  dcol3: { width: "5%", textAlign: "right" },   // Quantity
-  dcol4: { width: "5%", textAlign: "right" },   // FMV
-  dcol5: { width: "6%", textAlign: "right" },   // Gross Amount
-  dcol6: { width: "5%", textAlign: "right" },   // Commission
-  dcol7: { width: "6%", textAlign: "right" },   // Net Amount
-  dcol8: { width: "5%", textAlign: "right" },   // TTS
-  dcol9: { width: "5%", textAlign: "right" },   // TTB
-  dcol10: { width: "7%", textAlign: "right" },  // Gross Proceeds (JPY)
-  dcol11: { width: "7%", textAlign: "right" },  // Acquisition Cost (JPY)
-  dcol12: { width: "6%", textAlign: "right" },  // Commission (JPY)
-  dcol13: { width: "7%", textAlign: "right" },  // Realized Profit/Loss (JPY)
-  dcol14: { width: "6%", textAlign: "right" },  // Holdings
-  dcol15: { width: "7%", textAlign: "right" },  // Cost Basis
-  dcol16: { width: "7%", textAlign: "right" },  // Cost Basis per Holdings (JPY)
+  // Column widths for 16 columns - adjusted to match reference PDF
+  dcol1: { width: "5.5%", textAlign: "left" },    // Transaction Date
+  dcol2: { width: "4.5%", textAlign: "center" },  // Activity
+  dcol3: { width: "5%", textAlign: "right" },     // Quantity
+  dcol4: { width: "4.5%", textAlign: "right" },   // FMV
+  dcol5: { width: "6.5%", textAlign: "right" },   // Gross Amount
+  dcol6: { width: "5.5%", textAlign: "right" },   // Commission
+  dcol7: { width: "6%", textAlign: "right" },     // Net Amount
+  dcol8: { width: "4%", textAlign: "right" },     // TTS
+  dcol9: { width: "4%", textAlign: "right" },     // TTB
+  dcol10: { width: "7.5%", textAlign: "right" },  // Gross Proceeds (JPY)
+  dcol11: { width: "8%", textAlign: "right" },    // Acquisition Cost (JPY)
+  dcol12: { width: "6%", textAlign: "right" },    // Commission (JPY)
+  dcol13: { width: "8.5%", textAlign: "right" },  // Realized Profit/Loss (JPY)
+  dcol14: { width: "5.5%", textAlign: "right" },  // Holdings
+  dcol15: { width: "7%", textAlign: "right" },    // Cost Basis
+  dcol16: { width: "8%", textAlign: "right" },    // Cost Basis per Holdings (JPY)
   footer: {
     position: "absolute",
-    bottom: 15,
-    left: 20,
-    right: 20,
+    bottom: 10,
+    left: 15,
+    right: 15,
     textAlign: "center",
     fontSize: 6,
     color: "#666",
@@ -155,40 +174,42 @@ export const ReportPDF: React.FC<ReportPDFProps> = ({ result, email }) => {
 
         {/* Year Summary Section */}
         <View style={styles.section}>
-          <View style={styles.summaryHeader}>
-            <View style={[styles.detailCell, styles.summaryCol1]}>
-              <Text>Year</Text>
-            </View>
-            <View style={[styles.detailCell, styles.summaryCol2]}>
-              <Text>Capital Gain</Text>
-            </View>
-            <View style={[styles.detailCell, styles.summaryCol3]}>
-              <Text>Total</Text>
-            </View>
-          </View>
-          {result.summaries.map((s) => (
-            <View key={s.year} style={styles.summaryRow}>
-              <View style={[styles.detailCell, styles.summaryCol1]}>
-                <Text>{s.year}</Text>
+          <View style={styles.summaryContainer}>
+            <View style={styles.summaryHeader}>
+              <View style={[styles.summaryCell, styles.summaryCol1]}>
+                <Text>Year</Text>
               </View>
-              <View style={[styles.detailCell, styles.summaryCol2]}>
-                <Text>{fmt.format(s.realizedGainJPY)}</Text>
+              <View style={[styles.summaryCell, styles.summaryCol2]}>
+                <Text>Capital Gain</Text>
               </View>
-              <View style={[styles.detailCell, styles.summaryCol3]}>
-                <Text>{fmt.format(s.realizedGainJPY)}</Text>
+              <View style={[styles.summaryCell, styles.summaryCol3]}>
+                <Text>Total</Text>
               </View>
             </View>
-          ))}
-          {/* Total row */}
-          <View style={[styles.summaryRow, { backgroundColor: "#ffeb3b" }]}>
-            <View style={[styles.detailCell, styles.summaryCol1]}>
-              <Text>Total</Text>
-            </View>
-            <View style={[styles.detailCell, styles.summaryCol2]}>
-              <Text>{fmt.format(totalCapitalGain)}</Text>
-            </View>
-            <View style={[styles.detailCell, styles.summaryCol3]}>
-              <Text>{fmt.format(totalCapitalGain)}</Text>
+            {result.summaries.map((s, idx) => (
+              <View key={s.year} style={idx % 2 === 0 ? styles.summaryRow : styles.summaryRowAlt}>
+                <View style={[styles.summaryCell, styles.summaryCol1]}>
+                  <Text>{s.year}</Text>
+                </View>
+                <View style={[styles.summaryCell, styles.summaryCol2]}>
+                  <Text>{fmt.format(s.realizedGainJPY)}</Text>
+                </View>
+                <View style={[styles.summaryCell, styles.summaryCol3]}>
+                  <Text>{fmt.format(s.realizedGainJPY)}</Text>
+                </View>
+              </View>
+            ))}
+            {/* Total row */}
+            <View style={[styles.summaryRow, { backgroundColor: "#ffeb3b" }]}>
+              <View style={[styles.summaryCell, styles.summaryCol1]}>
+                <Text>Total</Text>
+              </View>
+              <View style={[styles.summaryCell, styles.summaryCol2]}>
+                <Text>{fmt.format(totalCapitalGain)}</Text>
+              </View>
+              <View style={[styles.summaryCell, styles.summaryCol3]}>
+                <Text>{fmt.format(totalCapitalGain)}</Text>
+              </View>
             </View>
           </View>
         </View>
@@ -200,58 +221,58 @@ export const ReportPDF: React.FC<ReportPDFProps> = ({ result, email }) => {
           </View>
           {/* Header Row */}
           <View style={styles.detailHeader}>
-            <View style={[styles.detailCell, styles.dcol1]}>
+            <View style={[styles.detailHeaderCell, styles.dcol1]}>
               <Text>Transaction Date</Text>
             </View>
-            <View style={[styles.detailCell, styles.dcol2]}>
+            <View style={[styles.detailHeaderCell, styles.dcol2]}>
               <Text>Activity</Text>
             </View>
-            <View style={[styles.detailCell, styles.dcol3]}>
+            <View style={[styles.detailHeaderCell, styles.dcol3]}>
               <Text>Quantity</Text>
             </View>
-            <View style={[styles.detailCell, styles.dcol4]}>
+            <View style={[styles.detailHeaderCell, styles.dcol4]}>
               <Text>FMV</Text>
             </View>
-            <View style={[styles.detailCell, styles.dcol5]}>
+            <View style={[styles.detailHeaderCell, styles.dcol5]}>
               <Text>Gross Amount</Text>
             </View>
-            <View style={[styles.detailCell, styles.dcol6]}>
+            <View style={[styles.detailHeaderCell, styles.dcol6]}>
               <Text>Commission</Text>
             </View>
-            <View style={[styles.detailCell, styles.dcol7]}>
+            <View style={[styles.detailHeaderCell, styles.dcol7]}>
               <Text>Net Amount</Text>
             </View>
-            <View style={[styles.detailCell, styles.dcol8]}>
+            <View style={[styles.detailHeaderCell, styles.dcol8]}>
               <Text>TTS</Text>
             </View>
-            <View style={[styles.detailCell, styles.dcol9]}>
+            <View style={[styles.detailHeaderCell, styles.dcol9]}>
               <Text>TTB</Text>
             </View>
-            <View style={[styles.detailCell, styles.dcol10]}>
+            <View style={[styles.detailHeaderCell, styles.dcol10]}>
               <Text>Gross Proceeds (JPY)</Text>
             </View>
-            <View style={[styles.detailCell, styles.dcol11]}>
+            <View style={[styles.detailHeaderCell, styles.dcol11]}>
               <Text>Acquisition Cost (JPY)</Text>
             </View>
-            <View style={[styles.detailCell, styles.dcol12]}>
+            <View style={[styles.detailHeaderCell, styles.dcol12]}>
               <Text>Commission (JPY)</Text>
             </View>
-            <View style={[styles.detailCell, styles.dcol13]}>
+            <View style={[styles.detailHeaderCell, styles.dcol13]}>
               <Text>Realized Profit/Loss (JPY)</Text>
             </View>
-            <View style={[styles.detailCell, styles.dcol14]}>
+            <View style={[styles.detailHeaderCell, styles.dcol14]}>
               <Text>Holdings</Text>
             </View>
-            <View style={[styles.detailCell, styles.dcol15]}>
+            <View style={[styles.detailHeaderCell, styles.dcol15]}>
               <Text>Cost Basis</Text>
             </View>
-            <View style={[styles.detailCell, styles.dcol16]}>
+            <View style={[styles.detailHeaderCell, styles.dcol16]}>
               <Text>Cost Basis per Holdings (JPY)</Text>
             </View>
           </View>
           {/* Data Rows */}
           {result.transactionDetails.map((tx, i) => (
-            <View key={i} style={styles.detailRow}>
+            <View key={i} style={i % 2 === 0 ? styles.detailRow : styles.detailRowAlt}>
               <View style={[styles.detailCell, styles.dcol1]}>
                 <Text>{tx.date}</Text>
               </View>
