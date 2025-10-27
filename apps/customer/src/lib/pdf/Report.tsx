@@ -25,98 +25,97 @@ if (typeof window === 'undefined') {
 
 const styles = StyleSheet.create({
   page: {
-    padding: 40,
-    fontSize: 10,
+    padding: 20,
+    fontSize: 8,
     fontFamily: "NotoSansJP",
   },
-  header: {
-    marginBottom: 20,
-    textAlign: "center",
+  // Top info section (Currency, Stock Name)
+  infoSection: {
+    marginBottom: 15,
   },
-  title: {
-    fontSize: 18,
+  infoRow: {
+    flexDirection: "row",
+    marginBottom: 2,
+  },
+  infoLabel: {
+    width: "15%",
+    padding: 4,
+    border: "1 solid #000",
+    backgroundColor: "#f0f0f0",
     fontWeight: "bold",
-    marginBottom: 10,
+    fontSize: 8,
   },
-  subtitle: {
-    fontSize: 12,
-    marginBottom: 5,
+  infoValue: {
+    width: "35%",
+    padding: 4,
+    border: "1 solid #000",
+    fontSize: 8,
   },
+  // Year summary section
   section: {
-    marginBottom: 20,
+    marginBottom: 15,
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 10,
     fontWeight: "bold",
-    marginBottom: 10,
-    borderBottom: "1 solid #000",
-    paddingBottom: 5,
+    marginBottom: 5,
+    padding: 4,
+    backgroundColor: "#ffeb3b",
+    border: "1 solid #000",
   },
-  table: {
-    width: "100%",
-  },
-  tableRow: {
+  // Year summary table (3 columns: Year, Capital Gain, Total)
+  summaryRow: {
     flexDirection: "row",
-    borderBottom: "1 solid #e0e0e0",
-    paddingVertical: 6,
   },
-  tableHeader: {
+  summaryHeader: {
     flexDirection: "row",
-    backgroundColor: "#f5f5f5",
-    paddingVertical: 8,
-    borderBottom: "2 solid #000",
-    fontWeight: "bold",
+    backgroundColor: "#ffeb3b",
   },
-  col1: { width: "25%", paddingHorizontal: 5 },
-  col2: { width: "25%", paddingHorizontal: 5, textAlign: "right" },
-  col3: { width: "25%", paddingHorizontal: 5, textAlign: "right" },
-  col4: { width: "25%", paddingHorizontal: 5, textAlign: "right" },
-  colLot1: { width: "33%", paddingHorizontal: 5 },
-  colLot2: { width: "33%", paddingHorizontal: 5, textAlign: "right" },
-  colLot3: { width: "34%", paddingHorizontal: 5, textAlign: "right" },
-  // 取引詳細テーブル用のスタイル（16列）
-  detailTable: {
-    width: "100%",
-    fontSize: 7, // より小さいフォント
+  summaryCell: {
+    padding: 4,
+    border: "1 solid #000",
+    fontSize: 7,
   },
+  summaryCol1: { width: "20%", textAlign: "left" },   // Year
+  summaryCol2: { width: "40%", textAlign: "right" },  // Capital Gain
+  summaryCol3: { width: "40%", textAlign: "right" },  // Total
+  // Transaction detail table (16 columns)
   detailHeader: {
     flexDirection: "row",
-    backgroundColor: "#f5f5f5",
-    paddingVertical: 5,
-    borderBottom: "2 solid #000",
-    fontWeight: "bold",
-    fontSize: 6,
+    backgroundColor: "#ffeb3b",
   },
   detailRow: {
     flexDirection: "row",
-    borderBottom: "1 solid #e0e0e0",
-    paddingVertical: 4,
-    fontSize: 7,
   },
-  // 各列の幅（合計100%）
-  dcol1: { width: "6%", paddingHorizontal: 2 },    // Date
-  dcol2: { width: "5%", paddingHorizontal: 2 },    // Activity
-  dcol3: { width: "5%", paddingHorizontal: 2, textAlign: "right" },  // Qty
-  dcol4: { width: "5%", paddingHorizontal: 2, textAlign: "right" },  // FMV
-  dcol5: { width: "6%", paddingHorizontal: 2, textAlign: "right" },  // Gross Amt
-  dcol6: { width: "5%", paddingHorizontal: 2, textAlign: "right" },  // Comm
-  dcol7: { width: "6%", paddingHorizontal: 2, textAlign: "right" },  // Net Amt
-  dcol8: { width: "5%", paddingHorizontal: 2, textAlign: "right" },  // TTS
-  dcol9: { width: "5%", paddingHorizontal: 2, textAlign: "right" },  // TTB
-  dcol10: { width: "7%", paddingHorizontal: 2, textAlign: "right" }, // Gross JPY
-  dcol11: { width: "7%", paddingHorizontal: 2, textAlign: "right" }, // Acq Cost JPY
-  dcol12: { width: "6%", paddingHorizontal: 2, textAlign: "right" }, // Comm JPY
-  dcol13: { width: "7%", paddingHorizontal: 2, textAlign: "right" }, // Realized JPY
-  dcol14: { width: "6%", paddingHorizontal: 2, textAlign: "right" }, // Holdings
-  dcol15: { width: "7%", paddingHorizontal: 2, textAlign: "right" }, // Cost Basis
-  dcol16: { width: "7%", paddingHorizontal: 2, textAlign: "right" }, // Cost/Unit
+  detailCell: {
+    padding: 2,
+    border: "1 solid #000",
+    fontSize: 6,
+  },
+  // Column widths for 16 columns
+  dcol1: { width: "6%", textAlign: "left" },    // Transaction Date
+  dcol2: { width: "5%", textAlign: "center" },  // Activity
+  dcol3: { width: "5%", textAlign: "right" },   // Quantity
+  dcol4: { width: "5%", textAlign: "right" },   // FMV
+  dcol5: { width: "6%", textAlign: "right" },   // Gross Amount
+  dcol6: { width: "5%", textAlign: "right" },   // Commission
+  dcol7: { width: "6%", textAlign: "right" },   // Net Amount
+  dcol8: { width: "5%", textAlign: "right" },   // TTS
+  dcol9: { width: "5%", textAlign: "right" },   // TTB
+  dcol10: { width: "7%", textAlign: "right" },  // Gross Proceeds (JPY)
+  dcol11: { width: "7%", textAlign: "right" },  // Acquisition Cost (JPY)
+  dcol12: { width: "6%", textAlign: "right" },  // Commission (JPY)
+  dcol13: { width: "7%", textAlign: "right" },  // Realized Profit/Loss (JPY)
+  dcol14: { width: "6%", textAlign: "right" },  // Holdings
+  dcol15: { width: "7%", textAlign: "right" },  // Cost Basis
+  dcol16: { width: "7%", textAlign: "right" },  // Cost Basis per Holdings (JPY)
   footer: {
     position: "absolute",
-    bottom: 30,
-    left: 40,
-    right: 40,
+    bottom: 15,
+    left: 20,
+    right: 20,
     textAlign: "center",
-    fontSize: 8,
+    fontSize: 6,
     color: "#666",
   },
 });
@@ -127,117 +126,187 @@ interface ReportPDFProps {
 }
 
 export const ReportPDF: React.FC<ReportPDFProps> = ({ result, email }) => {
-  const fmt = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 0 });
+  const fmt = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+  const fmtDecimal = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  // Calculate totals for year summary
+  const totalCapitalGain = result.summaries.reduce((sum, s) => sum + s.realizedGainJPY, 0);
 
   return (
     <Document>
       <Page size="A4" orientation="landscape" style={styles.page}>
-        {/* ヘッダー */}
-        <View style={styles.header}>
-          <Text style={styles.title}>株式譲渡所得 計算結果</Text>
-          <Text style={styles.subtitle}>
-            銘柄: {result.symbol} | 通貨: {result.currency}
-          </Text>
-          <Text style={styles.subtitle}>対象年度: {result.years.join(", ")}</Text>
-          <Text style={styles.subtitle}>メール: {email}</Text>
-        </View>
-
-        {/* 年別集計テーブル */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>年別譲渡損益サマリー</Text>
-          <View style={styles.table}>
-            <View style={styles.tableHeader}>
-              <Text style={styles.col1}>年度</Text>
-              <Text style={styles.col2}>売却数量</Text>
-              <Text style={styles.col3}>売却価額(JPY)</Text>
-              <Text style={styles.col4}>実現損益(JPY)</Text>
+        {/* Top Info Section: Currency and Stock Name */}
+        <View style={styles.infoSection}>
+          <View style={styles.infoRow}>
+            <View style={[styles.infoLabel]}>
+              <Text>Currency</Text>
             </View>
-            {result.summaries.map((s) => (
-              <View key={s.year} style={styles.tableRow}>
-                <Text style={styles.col1}>{s.year}</Text>
-                <Text style={styles.col2}>{fmt.format(s.sellQuantity)}</Text>
-                <Text style={styles.col3}>{fmt.format(s.proceedsJPY)}</Text>
-                <Text style={styles.col4}>{fmt.format(s.realizedGainJPY)}</Text>
-              </View>
-            ))}
+            <View style={[styles.infoValue]}>
+              <Text>{result.currency}</Text>
+            </View>
+            <View style={[styles.infoLabel, { marginLeft: 20 }]}>
+              <Text>Stock Name</Text>
+            </View>
+            <View style={[styles.infoValue]}>
+              <Text>{result.symbol}</Text>
+            </View>
           </View>
         </View>
 
-        {/* 取引詳細テーブル */}
+        {/* Year Summary Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>全取引詳細</Text>
-          <View style={styles.detailTable}>
-            <View style={styles.detailHeader}>
-              <Text style={styles.dcol1}>日付</Text>
-              <Text style={styles.dcol2}>区分</Text>
-              <Text style={styles.dcol3}>数量</Text>
-              <Text style={styles.dcol4}>単価</Text>
-              <Text style={styles.dcol5}>総額</Text>
-              <Text style={styles.dcol6}>手数料</Text>
-              <Text style={styles.dcol7}>純額</Text>
-              <Text style={styles.dcol8}>TTS</Text>
-              <Text style={styles.dcol9}>TTB</Text>
-              <Text style={styles.dcol10}>総額JPY</Text>
-              <Text style={styles.dcol11}>取得原価</Text>
-              <Text style={styles.dcol12}>手数料JPY</Text>
-              <Text style={styles.dcol13}>実現損益</Text>
-              <Text style={styles.dcol14}>保有数</Text>
-              <Text style={styles.dcol15}>簿価合計</Text>
-              <Text style={styles.dcol16}>単価JPY</Text>
+          <View style={styles.summaryHeader}>
+            <View style={[styles.detailCell, styles.summaryCol1]}>
+              <Text>Year</Text>
             </View>
-            {result.transactionDetails.map((tx, i) => (
-              <View key={i} style={styles.detailRow}>
-                <Text style={styles.dcol1}>{tx.date}</Text>
-                <Text style={styles.dcol2}>{tx.activity === "Purchased" ? "買" : "売"}</Text>
-                <Text style={styles.dcol3}>{fmt.format(tx.quantity)}</Text>
-                <Text style={styles.dcol4}>{tx.fmv.toFixed(2)}</Text>
-                <Text style={styles.dcol5}>{tx.grossAmount.toFixed(2)}</Text>
-                <Text style={styles.dcol6}>{tx.commission.toFixed(2)}</Text>
-                <Text style={styles.dcol7}>{tx.netAmount.toFixed(2)}</Text>
-                <Text style={styles.dcol8}>{tx.tts.toFixed(2)}</Text>
-                <Text style={styles.dcol9}>{tx.ttb.toFixed(2)}</Text>
-                <Text style={styles.dcol10}>{fmt.format(tx.grossProceedsJPY)}</Text>
-                <Text style={styles.dcol11}>{fmt.format(tx.acquisitionCostJPY)}</Text>
-                <Text style={styles.dcol12}>{fmt.format(tx.commissionJPY)}</Text>
-                <Text style={styles.dcol13}>{fmt.format(tx.realizedGainJPY)}</Text>
-                <Text style={styles.dcol14}>{fmt.format(tx.holdings)}</Text>
-                <Text style={styles.dcol15}>{fmt.format(tx.costBasis)}</Text>
-                <Text style={styles.dcol16}>{fmt.format(tx.costBasisPerHolding)}</Text>
+            <View style={[styles.detailCell, styles.summaryCol2]}>
+              <Text>Capital Gain</Text>
+            </View>
+            <View style={[styles.detailCell, styles.summaryCol3]}>
+              <Text>Total</Text>
+            </View>
+          </View>
+          {result.summaries.map((s) => (
+            <View key={s.year} style={styles.summaryRow}>
+              <View style={[styles.detailCell, styles.summaryCol1]}>
+                <Text>{s.year}</Text>
               </View>
-            ))}
+              <View style={[styles.detailCell, styles.summaryCol2]}>
+                <Text>{fmt.format(s.realizedGainJPY)}</Text>
+              </View>
+              <View style={[styles.detailCell, styles.summaryCol3]}>
+                <Text>{fmt.format(s.realizedGainJPY)}</Text>
+              </View>
+            </View>
+          ))}
+          {/* Total row */}
+          <View style={[styles.summaryRow, { backgroundColor: "#ffeb3b" }]}>
+            <View style={[styles.detailCell, styles.summaryCol1]}>
+              <Text>Total</Text>
+            </View>
+            <View style={[styles.detailCell, styles.summaryCol2]}>
+              <Text>{fmt.format(totalCapitalGain)}</Text>
+            </View>
+            <View style={[styles.detailCell, styles.summaryCol3]}>
+              <Text>{fmt.format(totalCapitalGain)}</Text>
+            </View>
           </View>
         </View>
 
-        {/* 残ロット一覧 */}
+        {/* Capital Gain Detail Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>期末保有ロット一覧</Text>
-          <View style={styles.table}>
-            <View style={styles.tableHeader}>
-              <Text style={styles.colLot1}>購入日</Text>
-              <Text style={styles.colLot2}>残数量</Text>
-              <Text style={styles.colLot3}>1株あたり原価(JPY)</Text>
-            </View>
-            {result.finalHoldings.length === 0 ? (
-              <View style={styles.tableRow}>
-                <Text style={styles.colLot1}>保有なし</Text>
-                <Text style={styles.colLot2}>-</Text>
-                <Text style={styles.colLot3}>-</Text>
-              </View>
-            ) : (
-              result.finalHoldings.map((lot, i) => (
-                <View key={i} style={styles.tableRow}>
-                  <Text style={styles.colLot1}>{lot.purchaseDate}</Text>
-                  <Text style={styles.colLot2}>{fmt.format(lot.quantity)}</Text>
-                  <Text style={styles.colLot3}>{fmt.format(lot.unitCostJPY)}</Text>
-                </View>
-              ))
-            )}
+          <View style={styles.sectionTitle}>
+            <Text>Capital Gain</Text>
           </View>
+          {/* Header Row */}
+          <View style={styles.detailHeader}>
+            <View style={[styles.detailCell, styles.dcol1]}>
+              <Text>Transaction Date</Text>
+            </View>
+            <View style={[styles.detailCell, styles.dcol2]}>
+              <Text>Activity</Text>
+            </View>
+            <View style={[styles.detailCell, styles.dcol3]}>
+              <Text>Quantity</Text>
+            </View>
+            <View style={[styles.detailCell, styles.dcol4]}>
+              <Text>FMV</Text>
+            </View>
+            <View style={[styles.detailCell, styles.dcol5]}>
+              <Text>Gross Amount</Text>
+            </View>
+            <View style={[styles.detailCell, styles.dcol6]}>
+              <Text>Commission</Text>
+            </View>
+            <View style={[styles.detailCell, styles.dcol7]}>
+              <Text>Net Amount</Text>
+            </View>
+            <View style={[styles.detailCell, styles.dcol8]}>
+              <Text>TTS</Text>
+            </View>
+            <View style={[styles.detailCell, styles.dcol9]}>
+              <Text>TTB</Text>
+            </View>
+            <View style={[styles.detailCell, styles.dcol10]}>
+              <Text>Gross Proceeds (JPY)</Text>
+            </View>
+            <View style={[styles.detailCell, styles.dcol11]}>
+              <Text>Acquisition Cost (JPY)</Text>
+            </View>
+            <View style={[styles.detailCell, styles.dcol12]}>
+              <Text>Commission (JPY)</Text>
+            </View>
+            <View style={[styles.detailCell, styles.dcol13]}>
+              <Text>Realized Profit/Loss (JPY)</Text>
+            </View>
+            <View style={[styles.detailCell, styles.dcol14]}>
+              <Text>Holdings</Text>
+            </View>
+            <View style={[styles.detailCell, styles.dcol15]}>
+              <Text>Cost Basis</Text>
+            </View>
+            <View style={[styles.detailCell, styles.dcol16]}>
+              <Text>Cost Basis per Holdings (JPY)</Text>
+            </View>
+          </View>
+          {/* Data Rows */}
+          {result.transactionDetails.map((tx, i) => (
+            <View key={i} style={styles.detailRow}>
+              <View style={[styles.detailCell, styles.dcol1]}>
+                <Text>{tx.date}</Text>
+              </View>
+              <View style={[styles.detailCell, styles.dcol2]}>
+                <Text>{tx.activity === "Purchased" ? "Buy" : "Sell"}</Text>
+              </View>
+              <View style={[styles.detailCell, styles.dcol3]}>
+                <Text>{fmtDecimal.format(tx.quantity)}</Text>
+              </View>
+              <View style={[styles.detailCell, styles.dcol4]}>
+                <Text>{fmtDecimal.format(tx.fmv)}</Text>
+              </View>
+              <View style={[styles.detailCell, styles.dcol5]}>
+                <Text>{fmtDecimal.format(tx.grossAmount)}</Text>
+              </View>
+              <View style={[styles.detailCell, styles.dcol6]}>
+                <Text>{fmtDecimal.format(tx.commission)}</Text>
+              </View>
+              <View style={[styles.detailCell, styles.dcol7]}>
+                <Text>{fmtDecimal.format(tx.netAmount)}</Text>
+              </View>
+              <View style={[styles.detailCell, styles.dcol8]}>
+                <Text>{fmtDecimal.format(tx.tts)}</Text>
+              </View>
+              <View style={[styles.detailCell, styles.dcol9]}>
+                <Text>{fmtDecimal.format(tx.ttb)}</Text>
+              </View>
+              <View style={[styles.detailCell, styles.dcol10]}>
+                <Text>{fmt.format(tx.grossProceedsJPY)}</Text>
+              </View>
+              <View style={[styles.detailCell, styles.dcol11]}>
+                <Text>{fmt.format(tx.acquisitionCostJPY)}</Text>
+              </View>
+              <View style={[styles.detailCell, styles.dcol12]}>
+                <Text>{fmt.format(tx.commissionJPY)}</Text>
+              </View>
+              <View style={[styles.detailCell, styles.dcol13]}>
+                <Text>{fmt.format(tx.realizedGainJPY)}</Text>
+              </View>
+              <View style={[styles.detailCell, styles.dcol14]}>
+                <Text>{fmtDecimal.format(tx.holdings)}</Text>
+              </View>
+              <View style={[styles.detailCell, styles.dcol15]}>
+                <Text>{fmt.format(tx.costBasis)}</Text>
+              </View>
+              <View style={[styles.detailCell, styles.dcol16]}>
+                <Text>{fmt.format(tx.costBasisPerHolding)}</Text>
+              </View>
+            </View>
+          ))}
         </View>
 
-        {/* フッター */}
+        {/* Footer */}
         <Text style={styles.footer}>
-          本レポートは kabu-tax-app により自動生成されました（移動平均法）
+          This report was automatically generated by kabu-tax-app (Moving Average Method)
         </Text>
       </Page>
     </Document>
